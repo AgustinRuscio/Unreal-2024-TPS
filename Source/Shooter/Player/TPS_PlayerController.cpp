@@ -7,8 +7,8 @@
 
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "TPS_PlayerCharacter.h"
 #include "Kismet/GameplayStatics.h"
+#include "TPS_PlayerCharacter.h"
 
 //---------------------------------------------------------------------------------------------------------------------------------------
 ATPS_PlayerController::ATPS_PlayerController() { }
@@ -62,11 +62,13 @@ void ATPS_PlayerController::MovePlayerCharacter(const FInputActionValue& value)
 	PlayerCharacterRef->MovePlayer(MovingAxis);
 }
 
+//---------------------------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerController::MovementStart(const FInputActionValue& value)
 {
 	PlayerCharacterRef->MovementStart();
 }
 
+//---------------------------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerController::MovementEnd(const FInputActionValue& value)
 {
 	PlayerCharacterRef->MovementEnd();

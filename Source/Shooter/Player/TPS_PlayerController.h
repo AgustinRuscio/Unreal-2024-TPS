@@ -64,6 +64,12 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	const class UInputAction* InputActionMoveCamera;
 	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	const class UInputAction* InputActionAim;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	const class UInputAction* InputActionShoot;
+	
 	//*****************************************************************************//
 	//								PRIVATE METHODS								...// 
 	//*****************************************************************************//
@@ -81,4 +87,7 @@ private:
 	void SprintEnd(const FInputActionValue& value);
 	
 	void RotatePlayerCamera(const FInputActionValue& value);
+
+	void AimStart(const FInputActionValue& value);
+	void AimEnd(const FInputActionValue& value);
 };

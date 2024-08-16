@@ -10,6 +10,14 @@
 #include "GameFramework/Character.h"
 #include "TPS_PlayerCharacter.generated.h"
 
+UENUM(BlueprintType)
+enum class EPlayerStateAction : uint8
+{
+	Idle,
+	Moving,
+	Aiming
+};
+
 UCLASS()
 class SHOOTER_API ATPS_PlayerCharacter : public ACharacter
 {
@@ -49,6 +57,9 @@ public:
 	
 	void RotateCamera(FVector2d Direction);
 	
+	void AimStart();
+	void AimEnd();
+	
 protected:
 	
 	//*****************************************************************************//
@@ -67,10 +78,17 @@ private:
 
 	bool bCanMove;
 	bool bCanMoveCamera;
+	bool bIsMoving;
 	bool bIsSprinting;
 
+	bool bCanAim;
+	bool bIsAiming;
+	bool bUnarmed;
+
+	EPlayerStateAction CurrentState;
 	
-	FTimeline TimeLineSpringArm;
+	FTimeline TimeLineSpringArmMoving;
+	FTimeline TimeLineSpringArmAiming;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "VFX")
 	UCurveFloat* FloatCurveSpringArmLength;
@@ -82,11 +100,13 @@ private:
 	virtual void BeginPlay() override;
 	
 	virtual void Tick(float DeltaTime) override;
-
 	
 	void BindTimeLines();
 	void TimeLinesTick(float DeltaSeconds);
 	
 	UFUNCTION()
 	void SetSpringArmMovingSettings(float deltaSeconds) const;
+	
+	UFUNCTION()
+	void SetSpringArmAimingSettings(float deltaSeconds) const;
 };

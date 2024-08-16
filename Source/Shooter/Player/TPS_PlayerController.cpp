@@ -52,6 +52,11 @@ void ATPS_PlayerController::BindRegularInputs()
 		EnhancedComponent->BindAction(InputActionSprint, ETriggerEvent::Completed, this, &ATPS_PlayerController::SprintEnd);
 		
 		EnhancedComponent->BindAction(InputActionMoveCamera, ETriggerEvent::Triggered, this, &ATPS_PlayerController::RotatePlayerCamera);
+		
+		EnhancedComponent->BindAction(InputActionAim, ETriggerEvent::Started, this, &ATPS_PlayerController::AimStart);
+		EnhancedComponent->BindAction(InputActionAim, ETriggerEvent::Completed, this, &ATPS_PlayerController::AimEnd);
+		
+		EnhancedComponent->BindAction(InputActionShoot, ETriggerEvent::Triggered, this, &ATPS_PlayerController::RotatePlayerCamera);
 	}
 }
 
@@ -91,4 +96,16 @@ void ATPS_PlayerController::RotatePlayerCamera(const FInputActionValue& value)
 {
 	FVector2d RotationAxis = value.Get<FVector2d>();
 	PlayerCharacterRef->RotateCamera(RotationAxis);
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerController::AimStart(const FInputActionValue& value)
+{
+	PlayerCharacterRef->AimStart();
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerController::AimEnd(const FInputActionValue& value)
+{
+	PlayerCharacterRef->AimEnd();
 }

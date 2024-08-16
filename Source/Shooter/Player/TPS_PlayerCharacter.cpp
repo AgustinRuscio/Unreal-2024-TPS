@@ -9,6 +9,9 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 
+static float CurrentSpringArmLength;
+static FVector CurrentSpringArmSocketOffset;
+
 //---------------------------------------------------------------------------------------------------------------------------------------
 ATPS_PlayerCharacter::ATPS_PlayerCharacter()
 {
@@ -57,14 +60,19 @@ void ATPS_PlayerCharacter::MovePlayer(FVector2d Direction)
 void ATPS_PlayerCharacter::MovementStart()
 {
 	if(!bCanMove) return;
+
+	bIsMoving = true;
 	
-	if(TimeLineSpringArm.IsPlaying())
+	if(!bIsAiming)
 	{
-		TimeLineSpringArm.Play();
-	}
-	else
-	{
-		TimeLineSpringArm.PlayFromStart();
+		if(TimeLineSpringArmMoving.IsPlaying())
+		{
+			TimeLineSpringArmMoving.Play();
+		}
+		else
+		{
+			TimeLineSpringArmMoving.PlayFromStart();
+		}
 	}
 }
 
@@ -73,22 +81,27 @@ void ATPS_PlayerCharacter::MovementEnd()
 {
 	if(!bCanMove) return;
 	
-	GetCharacterMovement()->MaxWalkSpeed = 250.0f;
+	bIsMoving = false;
 	
-	if(TimeLineSpringArm.IsPlaying())
+	GetCharacterMovement()->MaxWalkSpeed = 250.0f;
+
+	if(!bIsAiming)
 	{
-		TimeLineSpringArm.Reverse();
-	}
-	else
-	{
-		TimeLineSpringArm.ReverseFromEnd();
+		if(TimeLineSpringArmMoving.IsPlaying())
+		{
+			TimeLineSpringArmMoving.Reverse();
+		}
+		else
+		{
+			TimeLineSpringArmMoving.ReverseFromEnd();
+		}
 	}
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerCharacter::SprintStart()
 {
-	if(!bCanMove) return;
+	if(!bCanMove || bIsAiming) return;
 	
 	bIsSprinting = true;
 	GetCharacterMovement()->MaxWalkSpeed = 600.0f;
@@ -97,7 +110,7 @@ void ATPS_PlayerCharacter::SprintStart()
 //---------------------------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerCharacter::SprintEnd()
 {
-	if(!bCanMove) return;
+	if(!bCanMove|| bIsAiming) return;
 	
 	bIsSprinting = false;
 	GetCharacterMovement()->MaxWalkSpeed = 375.0f;
@@ -110,6 +123,55 @@ void ATPS_PlayerCharacter::RotateCamera(FVector2d Direction)
 	
 	AddControllerYawInput(Direction.X);
 	AddControllerPitchInput(Direction.Y);
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerCharacter::AimStart()
+{
+	bIsAiming				   = true;
+	bUseControllerRotationYaw  = true;
+	
+	if(TimeLineSpringArmMoving.IsPlaying())
+	{
+		TimeLineSpringArmMoving.Stop();
+	}
+
+	CurrentSpringArmLength = SpringArmComp->TargetArmLength;
+	CurrentSpringArmSocketOffset = SpringArmComp->SocketOffset;
+	
+	if(TimeLineSpringArmAiming.IsPlaying())
+	{
+		TimeLineSpringArmAiming.Play();
+	}
+	else
+	{
+		TimeLineSpringArmAiming.PlayFromStart();
+	}
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerCharacter::AimEnd()
+{
+	bIsAiming				   = false;
+	bUseControllerRotationYaw  = false;
+	
+	if(TimeLineSpringArmMoving.IsPlaying())
+	{
+		TimeLineSpringArmMoving.Stop();
+	}
+	
+	CurrentSpringArmLength		 = SpringArmComp->TargetArmLength;
+	CurrentSpringArmSocketOffset = SpringArmComp->SocketOffset;
+	
+	if(TimeLineSpringArmAiming.IsPlaying())
+	{
+		
+		TimeLineSpringArmAiming.Play();
+	}
+	else
+	{
+		TimeLineSpringArmAiming.PlayFromStart();
+	}
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -131,16 +193,22 @@ void ATPS_PlayerCharacter::Tick(float DeltaTime)
 //---------------------------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerCharacter::BindTimeLines()
 {
-	//--- Spring Arm Length
-	FOnTimelineFloat SpringArmTargetArmLengthChangedTick;
-	SpringArmTargetArmLengthChangedTick.BindUFunction(this, FName("SetSpringArmMovingSettings"));
-	TimeLineSpringArm.AddInterpFloat(FloatCurveSpringArmLength, SpringArmTargetArmLengthChangedTick);
+	//--- Spring Arm Length Moving
+	FOnTimelineFloat SpringArmTargetArmLengthMovingChangedTick;
+	SpringArmTargetArmLengthMovingChangedTick.BindUFunction(this, FName("SetSpringArmMovingSettings"));
+	TimeLineSpringArmMoving.AddInterpFloat(FloatCurveSpringArmLength, SpringArmTargetArmLengthMovingChangedTick);
+
+	//--- Spring Arm Length Aiming
+	FOnTimelineFloat SpringArmTargetArmLengthAimingChangedTick;
+	SpringArmTargetArmLengthAimingChangedTick.BindUFunction(this, FName("SetSpringArmAimingSettings"));
+	TimeLineSpringArmAiming.AddInterpFloat(FloatCurveSpringArmLength, SpringArmTargetArmLengthAimingChangedTick);
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerCharacter::TimeLinesTick(float DeltaSeconds)
 {
-	TimeLineSpringArm.TickTimeline(DeltaSeconds);
+	TimeLineSpringArmMoving.TickTimeline(DeltaSeconds);
+	TimeLineSpringArmAiming.TickTimeline(DeltaSeconds);
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -151,4 +219,35 @@ void ATPS_PlayerCharacter::SetSpringArmMovingSettings(float deltaSeconds) const
 	
 	auto NewLSocketOffset = FMath::Lerp(FVector(0.0f, 75.0f, 20.0f), FVector(0.0f, 90.0f, 30.0f), deltaSeconds);
 	SpringArmComp->SocketOffset			= NewLSocketOffset;
+}
+
+void ATPS_PlayerCharacter::SetSpringArmAimingSettings(float deltaSeconds) const
+{
+	if(bIsAiming)
+	{
+		auto NewLength = FMath::Lerp(CurrentSpringArmLength, 90.0f, deltaSeconds);
+		SpringArmComp->TargetArmLength = NewLength;
+		
+		auto NewLSocketOffset = FMath::Lerp(CurrentSpringArmSocketOffset, FVector(0.0f, 65.0f, 10.0f), deltaSeconds);
+		SpringArmComp->SocketOffset			= NewLSocketOffset;
+	}
+	else
+	{
+		if(bIsMoving)
+		{
+			auto NewLength = FMath::Lerp(CurrentSpringArmLength, 200.0f, deltaSeconds);
+			SpringArmComp->TargetArmLength = NewLength;
+		
+			auto NewLSocketOffset = FMath::Lerp(CurrentSpringArmSocketOffset, FVector(0.0f, 90.0f, 30.0f), deltaSeconds);
+			SpringArmComp->SocketOffset			= NewLSocketOffset;
+		}
+		else
+		{
+			auto NewLength = FMath::Lerp(CurrentSpringArmLength, 125.0f, deltaSeconds);
+			SpringArmComp->TargetArmLength = NewLength;
+		
+			auto NewLSocketOffset = FMath::Lerp(CurrentSpringArmSocketOffset, FVector(0.0f, 75.0f, 20.0f), deltaSeconds);
+			SpringArmComp->SocketOffset			= NewLSocketOffset;
+		}
+	}
 }

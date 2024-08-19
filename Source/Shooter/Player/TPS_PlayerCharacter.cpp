@@ -8,6 +8,9 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Shooter/Interactables/BaseInteractor.h"
+#include "Shooter/Weapons/Pistol.h"
+#include "Shooter/EnumContainer.h"
 
 static float CurrentSpringArmLength;
 static FVector CurrentSpringArmSocketOffset;
@@ -22,7 +25,7 @@ ATPS_PlayerCharacter::ATPS_PlayerCharacter()
 	SpringArmComp->TargetArmLength = 125.0f;
 	SpringArmComp->SocketOffset    = FVector(0.0f, 75.0f, 20.0f);
 	SpringArmComp->SetRelativeRotation(FRotator(0.0f, 90.0f, 0.0f));
-    SpringArmComp->bUsePawnControlRotation = true;
+    SpringArmComp->bUsePawnControlRotation = true;	
 	
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->MaxWalkSpeed			  = 250.0f;
@@ -128,16 +131,20 @@ void ATPS_PlayerCharacter::RotateCamera(FVector2d Direction)
 //---------------------------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerCharacter::AimStart()
 {
-	bIsAiming				   = true;
-	bUseControllerRotationYaw  = true;
+	bIsAiming				  = true;
+	bUseControllerRotationYaw = true;
 	
 	if(TimeLineSpringArmMoving.IsPlaying())
 	{
 		TimeLineSpringArmMoving.Stop();
 	}
 
-	CurrentSpringArmLength = SpringArmComp->TargetArmLength;
+	CurrentSpringArmLength		 = SpringArmComp->TargetArmLength;
 	CurrentSpringArmSocketOffset = SpringArmComp->SocketOffset;
+
+	UE_LOG(LogTemp, Warning, TEXT("CurrentSpringArmLength %f"), CurrentSpringArmLength);
+	UE_LOG(LogTemp, Warning, TEXT("SocketOffset x:%f - y:%f - z:%f"), SpringArmComp->SocketOffset.X, SpringArmComp->SocketOffset.Y, SpringArmComp->SocketOffset.Z);
+	
 	
 	if(TimeLineSpringArmAiming.IsPlaying())
 	{
@@ -152,20 +159,22 @@ void ATPS_PlayerCharacter::AimStart()
 //---------------------------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerCharacter::AimEnd()
 {
-	bIsAiming				   = false;
-	bUseControllerRotationYaw  = false;
+	bIsAiming				  = false;
+	bUseControllerRotationYaw = false;
 	
 	if(TimeLineSpringArmMoving.IsPlaying())
 	{
 		TimeLineSpringArmMoving.Stop();
 	}
-	
+
 	CurrentSpringArmLength		 = SpringArmComp->TargetArmLength;
 	CurrentSpringArmSocketOffset = SpringArmComp->SocketOffset;
+
+	UE_LOG(LogTemp, Warning, TEXT("CurrentSpringArmLength %f"), CurrentSpringArmLength);
+	UE_LOG(LogTemp, Warning, TEXT("SocketOffset x:%f - y:%f - z:%f"), SpringArmComp->SocketOffset.X, SpringArmComp->SocketOffset.Y, SpringArmComp->SocketOffset.Z);
 	
 	if(TimeLineSpringArmAiming.IsPlaying())
 	{
-		
 		TimeLineSpringArmAiming.Play();
 	}
 	else
@@ -175,11 +184,77 @@ void ATPS_PlayerCharacter::AimEnd()
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerCharacter::ShootStart()
+{
+	if(bUnarmed || !bIsAiming) return;
+	
+	Pistol->FireWeapon();
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerCharacter::ShootEnd()
+{
+	Pistol->FireEnd();
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerCharacter::Interaction()
+{
+	if(CurrentInteractor == nullptr) return;
+	
+	CurrentInteractor->OnInteraction();
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerCharacter::SetInteractable(ABaseInteractor* NewInteractable)
+{
+	if(CurrentInteractor != nullptr)
+		CurrentInteractor->RemoveFromCurrent();
+	
+	CurrentInteractor = NewInteractable;
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerCharacter::GetWeapon(EWeaponType WeaponType)
+{
+	if(bUnarmed)
+	{
+		bUnarmed = false;
+		EquipWeapon();
+	}
+	
+	if(WeaponType == EWeaponType::Pistol)
+	{
+		Pistol->SetWeaponActive(true);
+	}
+
+	if(WeaponType == EWeaponType::Rifle)
+	{
+		
+	}
+
+	if(WeaponType == EWeaponType::Shotgun)
+	{
+		
+	}
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
 	BindTimeLines();
+	
+	FActorSpawnParameters a;
+	a.Name = "Pisolt";
+	a.Owner = this;
+	
+	Pistol = GetWorld()->SpawnActor<ABaseWeapon>(PistolBase, GetActorLocation(), GetActorRotation(), a);
+
+	FAttachmentTransformRules& b = FAttachmentTransformRules::SnapToTargetNotIncludingScale;
+	Pistol->AttachToComponent(GetMesh(), b);
+	Pistol->SetWeaponActive(false);
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -188,6 +263,12 @@ void ATPS_PlayerCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	TimeLinesTick(DeltaTime);
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerCharacter::EquipWeapon()
+{
+	
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -221,14 +302,15 @@ void ATPS_PlayerCharacter::SetSpringArmMovingSettings(float deltaSeconds) const
 	SpringArmComp->SocketOffset			= NewLSocketOffset;
 }
 
+//---------------------------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerCharacter::SetSpringArmAimingSettings(float deltaSeconds) const
 {
 	if(bIsAiming)
 	{
-		auto NewLength = FMath::Lerp(CurrentSpringArmLength, 90.0f, deltaSeconds);
+		auto NewLength = FMath::Lerp(CurrentSpringArmLength, 215.0f, deltaSeconds);
 		SpringArmComp->TargetArmLength = NewLength;
 		
-		auto NewLSocketOffset = FMath::Lerp(CurrentSpringArmSocketOffset, FVector(0.0f, 65.0f, 10.0f), deltaSeconds);
+		auto NewLSocketOffset = FMath::Lerp(CurrentSpringArmSocketOffset, FVector(0.0f, 90.0f, 30.0f), deltaSeconds);
 		SpringArmComp->SocketOffset			= NewLSocketOffset;
 	}
 	else

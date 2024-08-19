@@ -8,6 +8,7 @@
 #include "CoreMinimal.h"
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Character.h"
+#include "Shooter/EnumContainer.h"
 #include "TPS_PlayerCharacter.generated.h"
 
 UENUM(BlueprintType)
@@ -44,6 +45,9 @@ public:
 	//								PUBLIC VARIABLES							   // 
 	//*****************************************************************************//
 
+	UPROPERTY(BlueprintReadOnly, Category = State)
+	bool bIsAiming;
+
 	//*****************************************************************************//
 	//								PUBLIC METHODS								   // 
 	//*****************************************************************************//
@@ -59,6 +63,15 @@ public:
 	
 	void AimStart();
 	void AimEnd();
+
+	void ShootStart();
+	void ShootEnd();
+
+	void Interaction();
+	
+	
+	void SetInteractable(class ABaseInteractor* NewInteractable);
+	void GetWeapon(EWeaponType WeaponType);
 	
 protected:
 	
@@ -82,16 +95,22 @@ private:
 	bool bIsSprinting;
 
 	bool bCanAim;
-	bool bIsAiming;
 	bool bUnarmed;
 
+	UPROPERTY(EditDefaultsOnly, Category = Weapons)
+	class ABaseWeapon* Pistol;
+	UPROPERTY(EditDefaultsOnly, Category = Weapons)
+	TSubclassOf<class ABaseWeapon> PistolBase;
+	
 	EPlayerStateAction CurrentState;
 	
 	FTimeline TimeLineSpringArmMoving;
 	FTimeline TimeLineSpringArmAiming;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "VFX")
+	UPROPERTY(EditDefaultsOnly, Category = VFX)
 	UCurveFloat* FloatCurveSpringArmLength;
+
+	class ABaseInteractor* CurrentInteractor;
 	
 	//*****************************************************************************//
 	//								PRIVATE METHODS								...// 
@@ -100,6 +119,8 @@ private:
 	virtual void BeginPlay() override;
 	
 	virtual void Tick(float DeltaTime) override;
+
+	void EquipWeapon();
 	
 	void BindTimeLines();
 	void TimeLinesTick(float DeltaSeconds);

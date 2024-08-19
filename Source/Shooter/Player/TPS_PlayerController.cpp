@@ -19,7 +19,7 @@ void ATPS_PlayerController::BeginPlay()
 	Super::BeginPlay();
 
 	PlayerCharacterRef = CastChecked<ATPS_PlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-	
+
 	BindRegularInputs();
 }
 
@@ -56,7 +56,10 @@ void ATPS_PlayerController::BindRegularInputs()
 		EnhancedComponent->BindAction(InputActionAim, ETriggerEvent::Started, this, &ATPS_PlayerController::AimStart);
 		EnhancedComponent->BindAction(InputActionAim, ETriggerEvent::Completed, this, &ATPS_PlayerController::AimEnd);
 		
-		EnhancedComponent->BindAction(InputActionShoot, ETriggerEvent::Triggered, this, &ATPS_PlayerController::RotatePlayerCamera);
+		EnhancedComponent->BindAction(InputActionShoot, ETriggerEvent::Triggered, this, &ATPS_PlayerController::ShootStart);
+		EnhancedComponent->BindAction(InputActionShoot, ETriggerEvent::Completed, this, &ATPS_PlayerController::ShootEnd);
+		
+		EnhancedComponent->BindAction(InputActionInteract, ETriggerEvent::Started, this, &ATPS_PlayerController::InteractStart);
 	}
 }
 
@@ -108,4 +111,22 @@ void ATPS_PlayerController::AimStart(const FInputActionValue& value)
 void ATPS_PlayerController::AimEnd(const FInputActionValue& value)
 {
 	PlayerCharacterRef->AimEnd();
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerController::ShootStart(const FInputActionValue& value)
+{
+	PlayerCharacterRef->ShootStart();
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerController::ShootEnd(const FInputActionValue& value)
+{
+	PlayerCharacterRef->ShootEnd();
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerController::InteractStart(const FInputActionValue& value)
+{
+	PlayerCharacterRef->Interaction();
 }

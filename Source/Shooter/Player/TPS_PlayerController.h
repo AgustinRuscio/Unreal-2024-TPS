@@ -69,6 +69,9 @@ private:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	const class UInputAction* InputActionShoot;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	const class UInputAction* InputActionInteract;
 	
 	//*****************************************************************************//
 	//								PRIVATE METHODS								...// 
@@ -90,4 +93,9 @@ private:
 
 	void AimStart(const FInputActionValue& value);
 	void AimEnd(const FInputActionValue& value);
+	
+	void ShootStart(const FInputActionValue& value);
+	void ShootEnd(const FInputActionValue& value);
+	
+	void InteractStart(const FInputActionValue& value);
 };

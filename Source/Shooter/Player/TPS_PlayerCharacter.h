@@ -37,7 +37,7 @@ public:
 	class USpringArmComponent* SpringArmComp;
 
 	class UCameraComponent* CameraComponent;
-
+	
 	UPROPERTY(EditDefaultsOnly, Category = "VFX")
 	TSubclassOf<class UCameraShakeBase> CameraShakeHit;
 	
@@ -71,6 +71,7 @@ public:
 	
 	
 	void SetInteractable(class ABaseInteractor* NewInteractable);
+	void RemoveInteractable();
 	void GetWeapon(EWeaponType WeaponType);
 	
 protected:
@@ -79,6 +80,9 @@ protected:
 	//								PROTECTED VARIABLES							   // 
 	//*****************************************************************************//
 
+	UPROPERTY(BlueprintReadOnly)
+	bool bPistolUnlocked;
+	
 	//*****************************************************************************//
 	//								PROTECTED METHODS							   // 
 	//*****************************************************************************//
@@ -97,10 +101,21 @@ private:
 	bool bCanAim;
 	bool bUnarmed;
 
-	UPROPERTY(EditDefaultsOnly, Category = Weapons)
-	class ABaseWeapon* Pistol;
+	
 	UPROPERTY(EditDefaultsOnly, Category = Weapons)
 	TSubclassOf<class ABaseWeapon> PistolBase;
+	class ABaseWeapon* Pistol;
+	
+	UPROPERTY(EditDefaultsOnly, Category = Weapons)
+	TSubclassOf<class ABaseWeapon> RifleBase;
+	class ABaseWeapon* Rifle;
+	
+	UPROPERTY(EditDefaultsOnly, Category = Weapons)
+	TSubclassOf<class ABaseWeapon> ShotgunBase;
+	class ABaseWeapon* Shotgun;
+
+	class ABaseWeapon* CurrentWeapon;
+	
 	
 	EPlayerStateAction CurrentState;
 	
@@ -120,6 +135,7 @@ private:
 	
 	virtual void Tick(float DeltaTime) override;
 
+	void CreateWeapons();
 	void EquipWeapon();
 	
 	void BindTimeLines();

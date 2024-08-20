@@ -19,21 +19,3 @@ void APickupPistol::OnInteraction()
 	Super::OnInteraction();
 	Player->GetWeapon(ThisWeaponType);
 }
-
-//---------------------------------------------------------------------------------------------------------------------------------------
-void APickupPistol::BeginPlay()
-{
-	Super::BeginPlay();
-}
-
-//---------------------------------------------------------------------------------------------------------------------------------------
-void APickupPistol::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-}
-
-//---------------------------------------------------------------------------------------------------------------------------------------
-void APickupPistol::OnInteractionMade()
-{
-	Super::OnInteractionMade();
-}

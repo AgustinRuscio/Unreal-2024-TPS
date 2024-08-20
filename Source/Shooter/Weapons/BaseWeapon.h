@@ -34,8 +34,11 @@ public:
 	
 	FORCEINLINE bool IsAutomatic() const { return bIsAutomatic; };
 	
+	FORCEINLINE UAnimMontage* GetAimAnimMontage() const { return AimAnimMontage; };
+	
 	virtual void FireWeapon();
 	virtual void FireEnd();
+	virtual void Reload();
 
 	void SetWeaponActive(bool Activate);
 	
@@ -70,8 +73,11 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = Settings)
 	float Damage;
 	
-	FTimerHandle FireRateTimer;
-	FTimerDelegate FireRateDelegate;
+	FTimerHandle FireRateTimerHandle;
+	FTimerDelegate FireRateTimerDelegate;
+	
+	FTimerHandle NoBulletsTimerHandle;
+	FTimerDelegate NoBulletsTimerDelegate;
 	
 	UPROPERTY(EditDefaultsOnly, Category = VFX)
 	class USoundBase* NoBulletSound;
@@ -82,12 +88,22 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = VFX)
 	TSubclassOf<class UCameraShakeBase> ShootCameraShake;
 	
+	UPROPERTY(EditDefaultsOnly, Category = VFX)
+	UAnimMontage* AimAnimMontage;
+
+	UPROPERTY(EditDefaultsOnly, Category = VFX)
+	UAnimSequence* ShootAnim;
+	
+	UPROPERTY(EditDefaultsOnly, Category = VFX)
+	UAnimSequence* ReloadAnim;
+	
+	
 	//*****************************************************************************//
 	//								PROTECTED METHODS							   // 
 	//*****************************************************************************//
 
 	bool CanFireCheck() const;
-	bool BulletsCheck() const;
+	bool BulletsCheck();
 
 	FVector CalculateGunSpread(const FVector& Forward) const;
 
@@ -100,6 +116,8 @@ private:
 	//*****************************************************************************//
 	//								PRIVATE VARIABLES							   // 
 	//*****************************************************************************//
+
+	void UnbindTimers();
 	
 	//*****************************************************************************//
 	//								PRIVATE METHODS								...// 

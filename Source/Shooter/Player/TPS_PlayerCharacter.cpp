@@ -39,6 +39,7 @@ ATPS_PlayerCharacter::ATPS_PlayerCharacter()
 	bCanMove	   = true;
 	bCanMoveCamera = true;
 	bIsSprinting   = false;
+	bUnarmed	   = true;
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -131,6 +132,8 @@ void ATPS_PlayerCharacter::RotateCamera(FVector2d Direction)
 //---------------------------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerCharacter::AimStart()
 {
+	if(bUnarmed) return;
+	
 	bIsAiming				  = true;
 	bUseControllerRotationYaw = true;
 	
@@ -139,6 +142,8 @@ void ATPS_PlayerCharacter::AimStart()
 		TimeLineSpringArmMoving.Stop();
 	}
 
+	PlayAnimMontage(CurrentWeapon->GetAimAnimMontage());
+	
 	CurrentSpringArmLength		 = SpringArmComp->TargetArmLength;
 	CurrentSpringArmSocketOffset = SpringArmComp->SocketOffset;
 
@@ -159,8 +164,12 @@ void ATPS_PlayerCharacter::AimStart()
 //---------------------------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerCharacter::AimEnd()
 {
+	if(bUnarmed) return;
+	
 	bIsAiming				  = false;
 	bUseControllerRotationYaw = false;
+	
+	StopAnimMontage(CurrentWeapon->GetAimAnimMontage());
 	
 	if(TimeLineSpringArmMoving.IsPlaying())
 	{
@@ -208,10 +217,20 @@ void ATPS_PlayerCharacter::Interaction()
 //---------------------------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerCharacter::SetInteractable(ABaseInteractor* NewInteractable)
 {
-	if(CurrentInteractor != nullptr)
+	if(CurrentInteractor != nullptr && CurrentInteractor != NewInteractable)
+	{
 		CurrentInteractor->RemoveFromCurrent();
+		CurrentInteractor = nullptr;
+	}
 	
 	CurrentInteractor = NewInteractable;
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerCharacter::RemoveInteractable()
+{
+	if(CurrentInteractor != nullptr)
+		CurrentInteractor = nullptr;
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -226,6 +245,8 @@ void ATPS_PlayerCharacter::GetWeapon(EWeaponType WeaponType)
 	if(WeaponType == EWeaponType::Pistol)
 	{
 		Pistol->SetWeaponActive(true);
+		bPistolUnlocked = true;
+		CurrentWeapon = Pistol;
 	}
 
 	if(WeaponType == EWeaponType::Rifle)
@@ -245,16 +266,7 @@ void ATPS_PlayerCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	BindTimeLines();
-	
-	FActorSpawnParameters a;
-	a.Name = "Pisolt";
-	a.Owner = this;
-	
-	Pistol = GetWorld()->SpawnActor<ABaseWeapon>(PistolBase, GetActorLocation(), GetActorRotation(), a);
-
-	FAttachmentTransformRules& b = FAttachmentTransformRules::SnapToTargetNotIncludingScale;
-	Pistol->AttachToComponent(GetMesh(), b);
-	Pistol->SetWeaponActive(false);
+	CreateWeapons();
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -263,6 +275,33 @@ void ATPS_PlayerCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	TimeLinesTick(DeltaTime);
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerCharacter::CreateWeapons()
+{
+	FAttachmentTransformRules& AttachmentRules = FAttachmentTransformRules::SnapToTargetIncludingScale;
+	
+	FActorSpawnParameters PistolSpawnParameter;
+	PistolSpawnParameter.Name = "Pistol";
+	PistolSpawnParameter.Owner = this;
+	Pistol = GetWorld()->SpawnActor<ABaseWeapon>(PistolBase, GetActorLocation(), GetActorRotation(), PistolSpawnParameter);
+	Pistol->AttachToComponent(GetMesh(), AttachmentRules, "PistolSocket");
+	Pistol->SetWeaponActive(false);
+
+	//FActorSpawnParameters RifleSpawnParameter;
+	//RifleSpawnParameter.Name = "Rifle";
+	//RifleSpawnParameter.Owner = this;
+	//Rifle = GetWorld()->SpawnActor<ABaseWeapon>(RifleBase, GetActorLocation(), GetActorRotation(), RifleSpawnParameter);
+	//Rifle->AttachToComponent(GetMesh(), AttachmentRules, "BigGunSocket");
+	//Rifle->SetWeaponActive(false);
+//
+	//FActorSpawnParameters ShotgunSpawnParameter;
+	//ShotgunSpawnParameter.Name = "Rifle";
+	//ShotgunSpawnParameter.Owner = this;
+	//Rifle = GetWorld()->SpawnActor<ABaseWeapon>(ShotgunBase, GetActorLocation(), GetActorRotation(), ShotgunSpawnParameter);
+	//Rifle->AttachToComponent(GetMesh(), AttachmentRules, "BigGunSocket");
+	//Rifle->SetWeaponActive(false);
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------

@@ -7,6 +7,8 @@
 
 #include "Kismet/GameplayStatics.h"
 
+static bool bCanSound = true;
+
 //---------------------------------------------------------------------------------------------------------------------------------------
 ABaseWeapon::ABaseWeapon()
 {
@@ -24,14 +26,19 @@ void ABaseWeapon::FireWeapon()
 
 	if(bIsAutomatic)
 	{
-		if(!GetWorld()->GetTimerManager().IsTimerActive(FireRateTimer))
+		if(!GetWorld()->GetTimerManager().IsTimerActive(FireRateTimerHandle))
 		{
-			GetWorld()->GetTimerManager().SetTimer(FireRateTimer, FireRateDelegate, FireRate, false);
+			GetWorld()->GetTimerManager().SetTimer(FireRateTimerHandle, FireRateTimerDelegate, FireRate, false);
 		}
 	}
 
 	--CurrentAmmo;
 
+	//UAnimInstance* AnimInstance = SkeletalMeshComponent->GetAnimInstance();
+	//AnimInstance->PlaySlotAnimationAsDynamicMontage(ShootAnim);
+
+	SkeletalMeshComponent->PlayAnimation(ShootAnim, false);
+	
 	UGameplayStatics::PlaySound2D(GetWorld(), ShootSound);
 	UGameplayStatics::PlayWorldCameraShake(GetWorld(), ShootCameraShake, GetActorLocation(), 0, 1000);
 }
@@ -41,13 +48,19 @@ void ABaseWeapon::FireEnd()
 {
 	if(bIsAutomatic)
 	{
-		GetWorld()->GetTimerManager().ClearTimer(FireRateTimer);
+		GetWorld()->GetTimerManager().ClearTimer(FireRateTimerHandle);
 		bCanFire = true;
 	}
 	else
 	{
 		bCanFire = true;
 	}
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ABaseWeapon::Reload()
+{
+	SkeletalMeshComponent->PlayAnimation(ReloadAnim, false);
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -67,7 +80,7 @@ bool ABaseWeapon::CanFireCheck() const
 	
 	if(bIsAutomatic)
 	{
-		return (bCanFire && !GetWorld()->GetTimerManager().IsTimerActive(FireRateTimer));
+		return (bCanFire && !GetWorld()->GetTimerManager().IsTimerActive(FireRateTimerHandle));
 	}
 	else
 	{
@@ -76,11 +89,19 @@ bool ABaseWeapon::CanFireCheck() const
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
-bool ABaseWeapon::BulletsCheck() const
+bool ABaseWeapon::BulletsCheck()
 {
 	if(CurrentAmmo <= 0)
 	{
-		UGameplayStatics::PlaySound2D(GetWorld(), NoBulletSound);
+		if(bCanSound)
+		{
+			bCanSound = false;
+			
+			UGameplayStatics::PlaySound2D(GetWorld(), NoBulletSound);
+
+			if(!GetWorld()->GetTimerManager().IsTimerActive(NoBulletsTimerHandle))
+				GetWorld()->GetTimerManager().SetTimer(NoBulletsTimerHandle, NoBulletsTimerDelegate, NoBulletSound->Duration, false);
+		}
 		return false;
 	}
 	else
@@ -98,9 +119,14 @@ void ABaseWeapon::BeginPlay()
 {
 	Super::BeginPlay();
 
-	FireRateDelegate.BindLambda([&]
+	FireRateTimerDelegate.BindLambda([&]
 	{
 		bCanFire = true;
+	});
+
+	NoBulletsTimerDelegate.BindLambda([]
+	{
+		bCanSound = true;
 	});
 }
 
@@ -109,20 +135,34 @@ void ABaseWeapon::BeginDestroy()
 {
 	Super::BeginDestroy();
 	
-	if (GetWorld())
-	{
-		if(GetWorld()->GetTimerManager().IsTimerActive(FireRateTimer))
-			GetWorld()->GetTimerManager().ClearTimer(FireRateTimer);
-	}
-
-	if (FireRateDelegate.IsBound())
-	{
-		FireRateDelegate.Unbind();
-	}
+	UnbindTimers();
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
 void ABaseWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ABaseWeapon::UnbindTimers()
+{
+	if (GetWorld())
+	{
+		if(GetWorld()->GetTimerManager().IsTimerActive(FireRateTimerHandle))
+			GetWorld()->GetTimerManager().ClearTimer(FireRateTimerHandle);
+
+		if(GetWorld()->GetTimerManager().IsTimerActive(NoBulletsTimerHandle))
+			GetWorld()->GetTimerManager().ClearTimer(NoBulletsTimerHandle);
+	}
+
+	if (FireRateTimerDelegate.IsBound())
+	{
+		FireRateTimerDelegate.Unbind();
+	}
+	
+	if (NoBulletsTimerDelegate.IsBound())
+	{
+		NoBulletsTimerDelegate.Unbind();
+	}
 }

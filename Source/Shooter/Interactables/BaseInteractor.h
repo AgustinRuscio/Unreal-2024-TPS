@@ -25,7 +25,7 @@ public:
 	ABaseInteractor();
 
 	UPROPERTY(EditDefaultsOnly, Category = Mesh)
-	UStaticMeshComponent* StaticMeshComp;
+	USkeletalMeshComponent* StaticMeshComp;
 	
 	UPROPERTY(EditDefaultsOnly, Category = Mesh)
 	class UBoxComponent* BoxComponent;
@@ -53,6 +53,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = Visuals)
 	TSubclassOf<UUserWidget> InteractionUserWidget;
 	UUserWidget* InteractionWidget;
+
+	UPROPERTY(EditDefaultsOnly, Category = SFX)
+	USoundBase* InteractionSound;
 	
 	//*****************************************************************************//
 	//								PROTECTED METHODS							   // 

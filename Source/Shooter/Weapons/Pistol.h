@@ -29,7 +29,6 @@ public:
 	//*****************************************************************************//
 
 	virtual void FireWeapon() override;
-	virtual void FireEnd() override;
 	
 	//*****************************************************************************//
 	//								PUBLIC METHODS								   // 
@@ -42,7 +41,5 @@ protected:
 	//*****************************************************************************//
 
 private:	
-	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaTime) override;
 
 };

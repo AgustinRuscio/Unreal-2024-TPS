@@ -5,11 +5,13 @@
 
 #include "TPS_PlayerCharacter.h"
 
+#include "Blueprint/UserWidget.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Shooter/Interactables/BaseInteractor.h"
 #include "Shooter/Weapons/Pistol.h"
+#include "Shooter/Widgets/CrosshairHUD.h"
 #include "Shooter/EnumContainer.h"
 
 static float CurrentSpringArmLength;
@@ -133,6 +135,7 @@ void ATPS_PlayerCharacter::RotateCamera(FVector2d Direction)
 void ATPS_PlayerCharacter::AimStart()
 {
 	if(bUnarmed) return;
+	if(CurrentWeapon == nullptr) return;
 	
 	bIsAiming				  = true;
 	bUseControllerRotationYaw = true;
@@ -141,8 +144,11 @@ void ATPS_PlayerCharacter::AimStart()
 	{
 		TimeLineSpringArmMoving.Stop();
 	}
-
+	
+	CrosshairHUD->AddToViewport(2);
+	
 	PlayAnimMontage(CurrentWeapon->GetAimAnimMontage());
+	CurrentWeapon->OnAim();
 	
 	CurrentSpringArmLength		 = SpringArmComp->TargetArmLength;
 	CurrentSpringArmSocketOffset = SpringArmComp->SocketOffset;
@@ -169,7 +175,10 @@ void ATPS_PlayerCharacter::AimEnd()
 	bIsAiming				  = false;
 	bUseControllerRotationYaw = false;
 	
+	CrosshairHUD->RemoveFromParent();
+	
 	StopAnimMontage(CurrentWeapon->GetAimAnimMontage());
+	CurrentWeapon->OnAimEnd();
 	
 	if(TimeLineSpringArmMoving.IsPlaying())
 	{
@@ -207,6 +216,17 @@ void ATPS_PlayerCharacter::ShootEnd()
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerCharacter::ReloadWeapon()
+{
+	if(CurrentWeapon == nullptr) return;
+	if(!bIsAiming) return;
+	if(bUnarmed) return;
+	
+	PlayAnimMontage(CurrentWeapon->GetReloadAnimMontage());
+	CurrentWeapon->Reload();
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerCharacter::Interaction()
 {
 	if(CurrentInteractor == nullptr) return;
@@ -236,17 +256,18 @@ void ATPS_PlayerCharacter::RemoveInteractable()
 //---------------------------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerCharacter::GetWeapon(EWeaponType WeaponType)
 {
-	if(bUnarmed)
-	{
-		bUnarmed = false;
-		EquipWeapon();
-	}
-	
 	if(WeaponType == EWeaponType::Pistol)
 	{
-		Pistol->SetWeaponActive(true);
-		bPistolUnlocked = true;
-		CurrentWeapon = Pistol;
+		if(!bPistolUnlocked)
+		{
+			Pistol->SetWeaponActive(true);
+			bPistolUnlocked = true;
+			CurrentWeapon = Pistol;
+		}
+		else
+		{
+			Pistol->AddAmmo();
+		}
 	}
 
 	if(WeaponType == EWeaponType::Rifle)
@@ -258,12 +279,20 @@ void ATPS_PlayerCharacter::GetWeapon(EWeaponType WeaponType)
 	{
 		
 	}
+	
+	if(bUnarmed)
+	{
+		bUnarmed = false;
+		EquipWeapon();
+	}
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	CrosshairHUD = CreateWidget<UCrosshairHUD>(GetWorld(), CrosshairWidget);
 
 	BindTimeLines();
 	CreateWeapons();
@@ -307,7 +336,7 @@ void ATPS_PlayerCharacter::CreateWeapons()
 //---------------------------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerCharacter::EquipWeapon()
 {
-	
+	PlayAnimMontage(CurrentWeapon->GetEquipAnimMontage());
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------

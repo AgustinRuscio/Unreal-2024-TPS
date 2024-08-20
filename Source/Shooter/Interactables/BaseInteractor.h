@@ -34,13 +34,13 @@ public:
 	//								PUBLIC VARIABLES							   // 
 	//*****************************************************************************//
 
-	virtual void OnInteraction() override;
-
-	void RemoveFromCurrent();
-	
 	//*****************************************************************************//
 	//								PUBLIC METHODS								   // 
 	//*****************************************************************************//
+	
+	virtual void OnInteraction() override;
+
+	void RemoveFromCurrent();
 	
 protected:
 	

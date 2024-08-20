@@ -6,55 +6,57 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BaseInteractor.h"
-#include "GameFramework/Actor.h"
+#include "Blueprint/UserWidget.h"
 #include "Shooter/EnumContainer.h"
-#include "PickupPistol.generated.h"
+#include "WeaponHUD.generated.h"
 
 
 UCLASS()
-class SHOOTER_API APickupPistol : public ABaseInteractor
+class SHOOTER_API UWeaponHUD : public UUserWidget
 {
 	GENERATED_BODY()
-	
+
 public:
 
 	//*****************************************************************************//
-	//						CONSTRUCTOR & PUBLIC COMPONENTS						   // 
-	//*****************************************************************************//
-
-	//Constructor
-	APickupPistol();
-	
-	//*****************************************************************************//
 	//								PUBLIC VARIABLES							   // 
 	//*****************************************************************************//
-
+	
 	//*****************************************************************************//
 	//								PUBLIC METHODS								   // 
 	//*****************************************************************************//
 
-	virtual void OnInteraction() override;
+	UFUNCTION(BlueprintImplementableEvent)
+	void SetWeaponType(EWeaponType OwnerType);
 	
+	UFUNCTION(BlueprintImplementableEvent)
+	void UpdateAmmo(class ABaseWeapon* OwnerWeapon);
+
 protected:
 	
 	//*****************************************************************************//
 	//								PROTECTED VARIABLES							   // 
 	//*****************************************************************************//
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Visuals)
+	UTexture* PistolImage;
 	
-	UPROPERTY(EditDefaultsOnly, Category = Settings)
-	EWeaponType ThisWeaponType;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Visuals)
+	UTexture* RifleImage;
 	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Visuals)
+	UTexture* ShotgunImage;
+
 	//*****************************************************************************//
 	//								PROTECTED METHODS							   // 
 	//*****************************************************************************//
-	
+
 private:
 	
 	//*****************************************************************************//
-	//								PRIVATE VARIABLES							   // 
+	//								PRIVATE VARIABLES							...// 
 	//*****************************************************************************//
-	
+
 	//*****************************************************************************//
 	//								PRIVATE METHODS								...// 
 	//*****************************************************************************//

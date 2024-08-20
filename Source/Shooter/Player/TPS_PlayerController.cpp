@@ -58,6 +58,9 @@ void ATPS_PlayerController::BindRegularInputs()
 		
 		EnhancedComponent->BindAction(InputActionShoot, ETriggerEvent::Triggered, this, &ATPS_PlayerController::ShootStart);
 		EnhancedComponent->BindAction(InputActionShoot, ETriggerEvent::Completed, this, &ATPS_PlayerController::ShootEnd);
+		EnhancedComponent->BindAction(InputActionReload, ETriggerEvent::Started, this, &ATPS_PlayerController::Reload);
+		
+		EnhancedComponent->BindAction(InputActionMeleeAttack, ETriggerEvent::Started, this, &ATPS_PlayerController::MeleeAttackStart);
 		
 		EnhancedComponent->BindAction(InputActionInteract, ETriggerEvent::Started, this, &ATPS_PlayerController::InteractStart);
 	}
@@ -123,6 +126,17 @@ void ATPS_PlayerController::ShootStart(const FInputActionValue& value)
 void ATPS_PlayerController::ShootEnd(const FInputActionValue& value)
 {
 	PlayerCharacterRef->ShootEnd();
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerController::Reload(const FInputActionValue& value)
+{
+	PlayerCharacterRef->ReloadWeapon();
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerController::MeleeAttackStart(const FInputActionValue& value)
+{
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------

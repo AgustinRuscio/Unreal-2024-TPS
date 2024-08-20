@@ -5,7 +5,9 @@
 
 #include "BaseWeapon.h"
 
+#include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
+#include "Shooter/Widgets/WeaponHUD.h"
 
 static bool bCanSound = true;
 
@@ -17,6 +19,18 @@ ABaseWeapon::ABaseWeapon()
 	SkeletalMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>("Skeletal Mesh");
 	
 	bCanFire = true;
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ABaseWeapon::OnAim()
+{
+	WeaponHUD->AddToViewport(2);
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ABaseWeapon::OnAimEnd()
+{
+	WeaponHUD->RemoveFromParent();
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -34,13 +48,12 @@ void ABaseWeapon::FireWeapon()
 
 	--CurrentAmmo;
 
-	//UAnimInstance* AnimInstance = SkeletalMeshComponent->GetAnimInstance();
-	//AnimInstance->PlaySlotAnimationAsDynamicMontage(ShootAnim);
-
+	WeaponHUD->UpdateAmmo(this);
+	
 	SkeletalMeshComponent->PlayAnimation(ShootAnim, false);
 	
+	UGameplayStatics::PlayWorldCameraShake(GetWorld(), ShootCameraShake, GetActorLocation(), 5000, 0);
 	UGameplayStatics::PlaySound2D(GetWorld(), ShootSound);
-	UGameplayStatics::PlayWorldCameraShake(GetWorld(), ShootCameraShake, GetActorLocation(), 0, 1000);
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -60,7 +73,50 @@ void ABaseWeapon::FireEnd()
 //---------------------------------------------------------------------------------------------------------------------------------------
 void ABaseWeapon::Reload()
 {
+	if(AmmoStorage <= 0) return;
+	if(CurrentAmmo == MaxAmmoInCharger) return;
+
+	if(AmmoStorage >= MaxAmmoInCharger)
+	{
+		AmmoStorage -= (MaxAmmoInCharger - CurrentAmmo);
+		CurrentAmmo = MaxAmmoInCharger;
+	}
+	else
+	{
+		if((CurrentAmmo + AmmoStorage) > MaxAmmoInCharger)
+		{
+			AmmoStorage = (CurrentAmmo + AmmoStorage) - MaxAmmoInCharger;
+			CurrentAmmo = MaxAmmoInCharger;
+		}
+		else
+		{
+			CurrentAmmo = (CurrentAmmo + AmmoStorage);
+			AmmoStorage = 0;
+		}
+	}
+
+	WeaponHUD->UpdateAmmo(this);
 	SkeletalMeshComponent->PlayAnimation(ReloadAnim, false);
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ABaseWeapon::AddAmmo(int amount)
+{
+	AmmoStorage += amount;
+
+	AmmoStorage = FMath::Clamp(AmmoStorage, 0, MaxAmmoToSave);
+	
+	WeaponHUD->UpdateAmmo(this);
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ABaseWeapon::AddAmmo()
+{
+	AmmoStorage += FMath::RandRange(1, 10);
+
+	AmmoStorage = FMath::Clamp(AmmoStorage, 0, MaxAmmoToSave);
+	
+	WeaponHUD->UpdateAmmo(this);
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -118,7 +174,10 @@ FVector ABaseWeapon::CalculateGunSpread(const FVector& Forward) const
 void ABaseWeapon::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
+	CurrentAmmo = FMath::RandRange(MaxAmmoInCharger / 2, MaxAmmoInCharger);
+	AmmoStorage = FMath::RandRange(MaxAmmoToSave / 5, MaxAmmoToSave / 2);
+	
 	FireRateTimerDelegate.BindLambda([&]
 	{
 		bCanFire = true;
@@ -128,6 +187,10 @@ void ABaseWeapon::BeginPlay()
 	{
 		bCanSound = true;
 	});
+
+	WeaponHUD = CreateWidget<UWeaponHUD>(GetWorld(), WeaponWidget);
+	WeaponHUD->SetWeaponType(WeaponType);
+	WeaponHUD->UpdateAmmo(this);
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------

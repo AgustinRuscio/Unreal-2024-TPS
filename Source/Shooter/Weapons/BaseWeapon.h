@@ -7,6 +7,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Shooter/EnumContainer.h"
 #include "BaseWeapon.generated.h"
 
 UCLASS()
@@ -30,21 +31,29 @@ public:
 	//								PUBLIC VARIABLES							   // 
 	//*****************************************************************************//
 
+	//*****************************************************************************//
+	//								PUBLIC METHODS								   // 
+	//*****************************************************************************//
+
 	FORCEINLINE bool IsActivated() const { return bIsActive; };
 	
 	FORCEINLINE bool IsAutomatic() const { return bIsAutomatic; };
 	
 	FORCEINLINE UAnimMontage* GetAimAnimMontage() const { return AimAnimMontage; };
+	FORCEINLINE UAnimMontage* GetReloadAnimMontage() const { return ReloadAnimMontage; };
+	FORCEINLINE UAnimMontage* GetEquipAnimMontage() const { return EquipdAnimMontage; };
+	
+	virtual void OnAim();
+	virtual void OnAimEnd();
 	
 	virtual void FireWeapon();
 	virtual void FireEnd();
 	virtual void Reload();
 
-	void SetWeaponActive(bool Activate);
+	void AddAmmo(int amount);
+	void AddAmmo();
 	
-	//*****************************************************************************//
-	//								PUBLIC METHODS								   // 
-	//*****************************************************************************//
+	void SetWeaponActive(bool Activate);
 	
 protected:
 	
@@ -58,8 +67,16 @@ protected:
 	bool bCanFire;
 	
 	UPROPERTY(EditDefaultsOnly, Category = Settings)
-	float MaxAmmo;
-	float CurrentAmmo;
+	int MaxAmmoToSave;
+	
+	UPROPERTY(BlueprintReadOnly, Category = Settings)
+	int AmmoStorage;
+	
+	UPROPERTY(EditDefaultsOnly, Category = Settings)
+	int MaxAmmoInCharger;
+	
+	UPROPERTY(BlueprintReadOnly)
+	int CurrentAmmo;
 
 	UPROPERTY(EditDefaultsOnly, Category = Settings)
 	float FireRate;
@@ -72,6 +89,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = Settings)
 	float Damage;
+
+	UPROPERTY(EditDefaultsOnly, Category = Settings)
+	EWeaponType WeaponType;
 	
 	FTimerHandle FireRateTimerHandle;
 	FTimerDelegate FireRateTimerDelegate;
@@ -86,10 +106,20 @@ protected:
 	class USoundBase* ShootSound;
 
 	UPROPERTY(EditDefaultsOnly, Category = VFX)
+	TSubclassOf<class UWeaponHUD> WeaponWidget;
+	class UWeaponHUD* WeaponHUD;
+	
+	UPROPERTY(EditDefaultsOnly, Category = VFX)
 	TSubclassOf<class UCameraShakeBase> ShootCameraShake;
 	
 	UPROPERTY(EditDefaultsOnly, Category = VFX)
 	UAnimMontage* AimAnimMontage;
+	
+	UPROPERTY(EditDefaultsOnly, Category = VFX)
+	UAnimMontage* ReloadAnimMontage;
+	
+	UPROPERTY(EditDefaultsOnly, Category = VFX)
+	UAnimMontage* EquipdAnimMontage;
 
 	UPROPERTY(EditDefaultsOnly, Category = VFX)
 	UAnimSequence* ShootAnim;
@@ -116,12 +146,10 @@ private:
 	//*****************************************************************************//
 	//								PRIVATE VARIABLES							   // 
 	//*****************************************************************************//
-
-	void UnbindTimers();
 	
 	//*****************************************************************************//
 	//								PRIVATE METHODS								...// 
 	//*****************************************************************************//
 	
-
+	void UnbindTimers();
 };

@@ -24,5 +24,6 @@ public:
 	virtual void OnInteraction() = 0;
 
 protected:
+	
 	virtual void OnInteractionMade() = 0;
 };

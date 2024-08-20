@@ -45,9 +45,6 @@ public:
 	//								PUBLIC VARIABLES							   // 
 	//*****************************************************************************//
 
-	UPROPERTY(BlueprintReadOnly, Category = State)
-	bool bIsAiming;
-
 	//*****************************************************************************//
 	//								PUBLIC METHODS								   // 
 	//*****************************************************************************//
@@ -67,6 +64,8 @@ public:
 	void ShootStart();
 	void ShootEnd();
 
+	void ReloadWeapon();
+	
 	void Interaction();
 	
 	
@@ -79,7 +78,9 @@ protected:
 	//*****************************************************************************//
 	//								PROTECTED VARIABLES							   // 
 	//*****************************************************************************//
-
+	UPROPERTY(BlueprintReadOnly, Category = State)
+	bool bIsAiming;
+	
 	UPROPERTY(BlueprintReadOnly)
 	bool bPistolUnlocked;
 	
@@ -116,6 +117,9 @@ private:
 
 	class ABaseWeapon* CurrentWeapon;
 	
+	UPROPERTY(EditDefaultsOnly, Category = VFX)
+	TSubclassOf<class UCrosshairHUD> CrosshairWidget;
+	UCrosshairHUD* CrosshairHUD;
 	
 	EPlayerStateAction CurrentState;
 	

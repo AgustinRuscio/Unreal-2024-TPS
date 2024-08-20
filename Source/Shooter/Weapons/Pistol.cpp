@@ -15,9 +15,7 @@ APistol::APistol()
  	PrimaryActorTick.bCanEverTick = true;
 
 	GunMaxDistance = 1000.f;
-	bCanFire	   = true;
 	FireRate	   = 1.0f;
-	CurrentAmmo	   = 10;
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------

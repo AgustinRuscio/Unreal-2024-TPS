@@ -71,6 +71,12 @@ private:
 	const class UInputAction* InputActionShoot;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	const class UInputAction* InputActionReload;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	const class UInputAction* InputActionMeleeAttack;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	const class UInputAction* InputActionInteract;
 	
 	//*****************************************************************************//
@@ -96,6 +102,9 @@ private:
 	
 	void ShootStart(const FInputActionValue& value);
 	void ShootEnd(const FInputActionValue& value);
+	
+	void Reload(const FInputActionValue& value);
+	void MeleeAttackStart(const FInputActionValue& value);
 	
 	void InteractStart(const FInputActionValue& value);
 };

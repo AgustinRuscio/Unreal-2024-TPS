@@ -40,7 +40,6 @@ void ABaseInteractor::RemoveFromCurrent()
 void ABaseInteractor::BeginPlay()
 {
 	Super::BeginPlay();
-
 	
 	InteractionWidget = CreateWidget(GetWorld(), InteractionUserWidget);
 	

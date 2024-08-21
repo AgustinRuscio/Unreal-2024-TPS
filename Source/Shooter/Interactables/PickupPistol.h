@@ -44,10 +44,16 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly, Category = Settings)
 	EWeaponType ThisWeaponType;
+
+	UPROPERTY(EditDefaultsOnly, Category = Settings)
+	TSubclassOf<class UGunPickupHUD> PickupWidget;
+	class UGunPickupHUD* PickupHUD;
 	
 	//*****************************************************************************//
 	//								PROTECTED METHODS							   // 
 	//*****************************************************************************//
+
+	virtual void BeginPlay() override;
 	
 private:
 	

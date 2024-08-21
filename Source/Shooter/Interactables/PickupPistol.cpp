@@ -6,6 +6,7 @@
 #include "PickupPistol.h"
 
 #include "Shooter/Player/TPS_PlayerCharacter.h"
+#include "Shooter/Widgets/GunPickupHUD.h"
 
 //---------------------------------------------------------------------------------------------------------------------------------------
 APickupPistol::APickupPistol()
@@ -18,4 +19,12 @@ void APickupPistol::OnInteraction()
 {
 	Super::OnInteraction();
 	Player->GetWeapon(ThisWeaponType);
+}
+
+void APickupPistol::BeginPlay()
+{
+	Super::BeginPlay();
+
+	PickupHUD = Cast<UGunPickupHUD>(InteractionWidget);
+	PickupHUD->SetWeaponType(ThisWeaponType);
 }

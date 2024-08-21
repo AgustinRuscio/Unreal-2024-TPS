@@ -83,6 +83,12 @@ protected:
 	
 	UPROPERTY(BlueprintReadOnly)
 	bool bPistolUnlocked;
+
+	UPROPERTY(BlueprintReadOnly)
+	bool bRifleUnlocked;
+
+	UPROPERTY(BlueprintReadOnly)
+	bool bShotgunUnlocked;
 	
 	//*****************************************************************************//
 	//								PROTECTED METHODS							   // 

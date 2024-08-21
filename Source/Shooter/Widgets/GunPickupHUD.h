@@ -8,14 +8,14 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Shooter/EnumContainer.h"
-#include "WeaponHUD.generated.h"
+#include "GunPickupHUD.generated.h"
 
 
 UCLASS()
-class SHOOTER_API UWeaponHUD : public UUserWidget
+class SHOOTER_API UGunPickupHUD : public UUserWidget
 {
 	GENERATED_BODY()
-
+	
 public:
 
 	//*****************************************************************************//
@@ -28,9 +28,6 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void SetWeaponType(EWeaponType OwnerType);
-	
-	UFUNCTION(BlueprintImplementableEvent)
-	void UpdateAmmo(class ABaseWeapon* OwnerWeapon);
 
 protected:
 	
@@ -46,9 +43,11 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Visuals)
 	UTexture* ShotgunImage;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Visuals)
+	UTexture* ReloadImage;
 
 	//*****************************************************************************//
 	//								PROTECTED METHODS							   // 
 	//*****************************************************************************//
-	
 };

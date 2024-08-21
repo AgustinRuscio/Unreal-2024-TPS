@@ -49,4 +49,5 @@ void APistol::FireWeapon()
 
 	if(!bHit) return;
 
+	CheckHited(OutHit);
 }

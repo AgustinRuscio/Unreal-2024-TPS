@@ -221,6 +221,7 @@ void ATPS_PlayerCharacter::ReloadWeapon()
 	if(CurrentWeapon == nullptr) return;
 	if(!bIsAiming) return;
 	if(bUnarmed) return;
+	if(!CurrentWeapon->CanReload()) return;
 	
 	PlayAnimMontage(CurrentWeapon->GetReloadAnimMontage());
 	CurrentWeapon->Reload();
@@ -336,19 +337,19 @@ void ATPS_PlayerCharacter::CreateWeapons()
 	Pistol->AttachToComponent(GetMesh(), AttachmentRules, "PistolSocket");
 	Pistol->SetWeaponActive(false);
 
-	 FActorSpawnParameters RifleSpawnParameter;
-	 RifleSpawnParameter.Name = "Rifle";
-	 RifleSpawnParameter.Owner = this;
-	 Rifle = GetWorld()->SpawnActor<ABaseWeapon>(RifleBase, GetActorLocation(), GetActorRotation(), RifleSpawnParameter);
-	 Rifle->AttachToComponent(GetMesh(), AttachmentRules, "BigGunSocket");
-	 Rifle->SetWeaponActive(false);
-
-	FActorSpawnParameters ShotgunSpawnParameter;
-	ShotgunSpawnParameter.Name = "Rifle";
-	ShotgunSpawnParameter.Owner = this;
-	Rifle = GetWorld()->SpawnActor<ABaseWeapon>(ShotgunBase, GetActorLocation(), GetActorRotation(), ShotgunSpawnParameter);
-	Rifle->AttachToComponent(GetMesh(), AttachmentRules, "BigGunSocket");
-	Rifle->SetWeaponActive(false);
+	// FActorSpawnParameters RifleSpawnParameter;
+	// RifleSpawnParameter.Name = "Rifle";
+	// RifleSpawnParameter.Owner = this;
+	// Rifle = GetWorld()->SpawnActor<ABaseWeapon>(RifleBase, GetActorLocation(), GetActorRotation(), RifleSpawnParameter);
+	// Rifle->AttachToComponent(GetMesh(), AttachmentRules, "BigGunSocket");
+	// Rifle->SetWeaponActive(false);
+//
+	//FActorSpawnParameters ShotgunSpawnParameter;
+	//ShotgunSpawnParameter.Name = "Rifle";
+	//ShotgunSpawnParameter.Owner = this;
+	//Rifle = GetWorld()->SpawnActor<ABaseWeapon>(ShotgunBase, GetActorLocation(), GetActorRotation(), ShotgunSpawnParameter);
+	//Rifle->AttachToComponent(GetMesh(), AttachmentRules, "BigGunSocket");
+	//Rifle->SetWeaponActive(false);
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------

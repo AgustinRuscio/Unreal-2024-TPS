@@ -38,6 +38,7 @@ public:
 	FORCEINLINE bool IsActivated() const { return bIsActive; };
 	
 	FORCEINLINE bool IsAutomatic() const { return bIsAutomatic; };
+	bool CanReload() const;
 	
 	FORCEINLINE UAnimMontage* GetAimAnimMontage() const { return AimAnimMontage; };
 	FORCEINLINE UAnimMontage* GetReloadAnimMontage() const { return ReloadAnimMontage; };
@@ -88,7 +89,7 @@ protected:
 	float GunMaxDistance;
 
 	UPROPERTY(EditDefaultsOnly, Category = Settings)
-	float Damage;
+	float BaseDamage;
 
 	UPROPERTY(EditDefaultsOnly, Category = Settings)
 	EWeaponType WeaponType;
@@ -137,10 +138,13 @@ protected:
 
 	FVector CalculateGunSpread(const FVector& Forward) const;
 
+	void CheckHited(FHitResult& hit);
+	
 	virtual void BeginPlay() override;
 	virtual void BeginDestroy() override;
 	
 	virtual void Tick(float DeltaTime) override;
+	
 private:
 	
 	//*****************************************************************************//

@@ -7,6 +7,7 @@
 
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
+#include "Shooter/Interface/IDamageable.h"
 #include "Shooter/Widgets/WeaponHUD.h"
 
 static bool bCanSound = true;
@@ -19,6 +20,11 @@ ABaseWeapon::ABaseWeapon()
 	SkeletalMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>("Skeletal Mesh");
 	
 	bCanFire = true;
+}
+
+bool ABaseWeapon::CanReload() const
+{
+	return (AmmoStorage > 0 && CurrentAmmo < MaxAmmoInCharger);
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -168,6 +174,39 @@ bool ABaseWeapon::BulletsCheck()
 FVector ABaseWeapon::CalculateGunSpread(const FVector& Forward) const
 {
 	return FMath::VRandCone(Forward, FMath::DegreesToRadians(GunSpread));
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ABaseWeapon::CheckHited(FHitResult& hit)
+{
+	IIDamageable* damageable = Cast<IIDamageable>(hit.GetActor());
+	
+	if(damageable == nullptr) return;
+
+	float damageMultiplier = 1.0f;
+	
+	if(hit.Distance > GunMaxDistance * 0.5f)
+	{
+		damageMultiplier -= (hit.Distance / GunMaxDistance);
+	}
+
+	if(hit.BoneName == damageable->GetHeadBone())
+	{
+		damageMultiplier = 2.0f;
+
+		if(hit.Distance > GunMaxDistance * 0.5f)
+		{
+			damageMultiplier -= (hit.Distance / GunMaxDistance);
+		}
+	}
+	
+	damageMultiplier = FMath::Clamp(damageMultiplier, 0.0f, 2.0f);
+
+	float finalDamage = BaseDamage * damageMultiplier;
+
+	UE_LOG(LogTemp, Warning, TEXT("%f"), finalDamage);
+	
+	damageable->OnHit(finalDamage,	hit.BoneName);
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------

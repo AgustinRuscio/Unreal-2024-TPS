@@ -56,7 +56,7 @@ void ABaseWeapon::FireWeapon()
 
 	WeaponHUD->UpdateAmmo(this);
 	
-	SkeletalMeshComponent->PlayAnimation(ShootAnim, false);
+	SkeletalMeshComponent->PlayAnimation(GunShootAnim, false);
 	
 	UGameplayStatics::PlayWorldCameraShake(GetWorld(), ShootCameraShake, GetActorLocation(), 5000, 0);
 	UGameplayStatics::PlaySound2D(GetWorld(), ShootSound);
@@ -130,6 +130,8 @@ void ABaseWeapon::SetWeaponActive(bool Activate)
 {
 	bIsActive = Activate;
 	SkeletalMeshComponent->SetVisibility(Activate);
+	
+	Activate ? WeaponHUD->AddToViewport() : WeaponHUD->RemoveFromParent();
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -182,31 +184,8 @@ void ABaseWeapon::CheckHited(FHitResult& hit)
 	IIDamageable* damageable = Cast<IIDamageable>(hit.GetActor());
 	
 	if(damageable == nullptr) return;
-
-	float damageMultiplier = 1.0f;
 	
-	if(hit.Distance > GunMaxDistance * 0.5f)
-	{
-		damageMultiplier -= (hit.Distance / GunMaxDistance);
-	}
-
-	if(hit.BoneName == damageable->GetHeadBone())
-	{
-		damageMultiplier = 2.0f;
-
-		if(hit.Distance > GunMaxDistance * 0.5f)
-		{
-			damageMultiplier -= (hit.Distance / GunMaxDistance);
-		}
-	}
-	
-	damageMultiplier = FMath::Clamp(damageMultiplier, 0.0f, 2.0f);
-
-	float finalDamage = BaseDamage * damageMultiplier;
-
-	UE_LOG(LogTemp, Warning, TEXT("%f"), finalDamage);
-	
-	damageable->OnHit(finalDamage,	hit.BoneName);
+	damageable->OnHit(CalculateDamage(hit.Distance, hit.BoneName , damageable),	hit.BoneName);
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -241,9 +220,32 @@ void ABaseWeapon::BeginDestroy()
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
-void ABaseWeapon::Tick(float DeltaTime)
+float ABaseWeapon::CalculateDamage(float Distance, FName BoneHittedName, IIDamageable* OtherActor)
 {
-	Super::Tick(DeltaTime);
+	float damageMultiplier = 1.0f;
+	
+	if(Distance > GunMaxDistance * 0.75f)
+	{
+		damageMultiplier -= (Distance / GunMaxDistance);
+	}
+
+	if(BoneHittedName == OtherActor->GetHeadBone())
+	{
+		damageMultiplier = 100.0f;
+
+		if(Distance> GunMaxDistance * 0.5f)
+		{
+			damageMultiplier -= (Distance / GunMaxDistance);
+		}
+	}
+	
+	damageMultiplier = FMath::Clamp(damageMultiplier, 0.0f, 2.0f);
+
+	float finalDamage = BaseDamage * damageMultiplier;
+
+	UE_LOG(LogTemp, Warning, TEXT("%f"), finalDamage);
+	
+	return finalDamage;
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------

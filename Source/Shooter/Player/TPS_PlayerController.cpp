@@ -55,6 +55,7 @@ void ATPS_PlayerController::BindRegularInputs()
 		
 		EnhancedComponent->BindAction(InputActionAim, ETriggerEvent::Started, this, &ATPS_PlayerController::AimStart);
 		EnhancedComponent->BindAction(InputActionAim, ETriggerEvent::Completed, this, &ATPS_PlayerController::AimEnd);
+		EnhancedComponent->BindAction(InputActionUnEquip, ETriggerEvent::Started, this, &ATPS_PlayerController::UnEquipStart);
 		
 		EnhancedComponent->BindAction(InputActionShoot, ETriggerEvent::Triggered, this, &ATPS_PlayerController::ShootStart);
 		EnhancedComponent->BindAction(InputActionShoot, ETriggerEvent::Completed, this, &ATPS_PlayerController::ShootEnd);
@@ -63,6 +64,10 @@ void ATPS_PlayerController::BindRegularInputs()
 		EnhancedComponent->BindAction(InputActionMeleeAttack, ETriggerEvent::Started, this, &ATPS_PlayerController::MeleeAttackStart);
 		
 		EnhancedComponent->BindAction(InputActionInteract, ETriggerEvent::Started, this, &ATPS_PlayerController::InteractStart);
+		
+		EnhancedComponent->BindAction(InputActionFirstWeapon, ETriggerEvent::Started, this, &ATPS_PlayerController::FirstWeapon);
+		EnhancedComponent->BindAction(InputActionSecondWeapon, ETriggerEvent::Started, this, &ATPS_PlayerController::SecondWeapon);
+		EnhancedComponent->BindAction(InputActionThirdWeapon, ETriggerEvent::Started, this, &ATPS_PlayerController::ThirdWeapon);
 	}
 }
 
@@ -117,6 +122,12 @@ void ATPS_PlayerController::AimEnd(const FInputActionValue& value)
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerController::UnEquipStart(const FInputActionValue& value)
+{
+	PlayerCharacterRef->UnEquipWeapon();
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerController::ShootStart(const FInputActionValue& value)
 {
 	PlayerCharacterRef->ShootStart();
@@ -143,4 +154,22 @@ void ATPS_PlayerController::MeleeAttackStart(const FInputActionValue& value)
 void ATPS_PlayerController::InteractStart(const FInputActionValue& value)
 {
 	PlayerCharacterRef->Interaction();
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerController::FirstWeapon(const FInputActionValue& value)
+{
+	PlayerCharacterRef->SwapWeapon(1);
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerController::SecondWeapon(const FInputActionValue& value)
+{
+	PlayerCharacterRef->SwapWeapon(2);
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerController::ThirdWeapon(const FInputActionValue& value)
+{
+	PlayerCharacterRef->SwapWeapon(3);
 }

@@ -14,5 +14,18 @@ UCLASS()
 class SHOOTER_API UCrosshairHUD : public UUserWidget
 {
 	GENERATED_BODY()
+
+public:
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void ChangeEquippedWeapon(EWeaponType NewWeapon);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void WeaponUnlocked(EWeaponType NewWeapon);
 	
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnAimStart();
+	
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnAimEnd();
 };

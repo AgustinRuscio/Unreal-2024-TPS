@@ -145,17 +145,13 @@ void ATPS_PlayerCharacter::AimStart()
 		TimeLineSpringArmMoving.Stop();
 	}
 	
-	CrosshairHUD->AddToViewport(2);
+	CrosshairHUD->OnAimStart();
 	
 	PlayAnimMontage(CurrentWeapon->GetAimAnimMontage());
 	CurrentWeapon->OnAim();
 	
 	CurrentSpringArmLength		 = SpringArmComp->TargetArmLength;
 	CurrentSpringArmSocketOffset = SpringArmComp->SocketOffset;
-
-	UE_LOG(LogTemp, Warning, TEXT("CurrentSpringArmLength %f"), CurrentSpringArmLength);
-	UE_LOG(LogTemp, Warning, TEXT("SocketOffset x:%f - y:%f - z:%f"), SpringArmComp->SocketOffset.X, SpringArmComp->SocketOffset.Y, SpringArmComp->SocketOffset.Z);
-	
 	
 	if(TimeLineSpringArmAiming.IsPlaying())
 	{
@@ -175,7 +171,7 @@ void ATPS_PlayerCharacter::AimEnd()
 	bIsAiming				  = false;
 	bUseControllerRotationYaw = false;
 	
-	CrosshairHUD->RemoveFromParent();
+	CrosshairHUD->OnAimEnd();
 	
 	StopAnimMontage(CurrentWeapon->GetAimAnimMontage());
 	CurrentWeapon->OnAimEnd();
@@ -187,9 +183,6 @@ void ATPS_PlayerCharacter::AimEnd()
 
 	CurrentSpringArmLength		 = SpringArmComp->TargetArmLength;
 	CurrentSpringArmSocketOffset = SpringArmComp->SocketOffset;
-
-	UE_LOG(LogTemp, Warning, TEXT("CurrentSpringArmLength %f"), CurrentSpringArmLength);
-	UE_LOG(LogTemp, Warning, TEXT("SocketOffset x:%f - y:%f - z:%f"), SpringArmComp->SocketOffset.X, SpringArmComp->SocketOffset.Y, SpringArmComp->SocketOffset.Z);
 	
 	if(TimeLineSpringArmAiming.IsPlaying())
 	{
@@ -202,11 +195,26 @@ void ATPS_PlayerCharacter::AimEnd()
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerCharacter::UnEquipWeapon()
+{
+	if(CurrentWeapon == nullptr || !bCanUnEquip) return;
+	
+	PlayAnimMontage(CurrentWeapon->GetEquipAnimMontage(), 1);	
+	CurrentWeapon->SetWeaponActive(false);
+
+	AimEnd();
+
+	CurrentWeaponIndex = 0;
+	bUnarmed	  = true;
+	CurrentWeapon = nullptr;
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerCharacter::ShootStart()
 {
-	if(bUnarmed || !bIsAiming) return;
+	if(bUnarmed || !bIsAiming || !bCanShoot) return;
 	
-	Pistol->FireWeapon();
+	CurrentWeapon->FireWeapon();
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -223,8 +231,26 @@ void ATPS_PlayerCharacter::ReloadWeapon()
 	if(bUnarmed) return;
 	if(!CurrentWeapon->CanReload()) return;
 	
-	PlayAnimMontage(CurrentWeapon->GetReloadAnimMontage());
 	CurrentWeapon->Reload();
+	
+	auto t = PlayAnimMontage(CurrentWeapon->GetReloadAnimMontage());
+
+	bCanShoot   = false;
+	bCanUnEquip = false;
+
+	if(!GetWorldTimerManager().IsTimerActive(AnimTimerHandle))
+	{
+		Del.BindLambda([&]
+		{
+			if(bIsAiming)
+				PlayAnimMontage(CurrentWeapon->GetAimAnimMontage());
+
+			bCanShoot   = true;
+			bCanUnEquip = true;
+		});
+			
+		GetWorldTimerManager().SetTimer(AnimTimerHandle,Del , t,false);
+	}
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -257,13 +283,17 @@ void ATPS_PlayerCharacter::RemoveInteractable()
 //---------------------------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerCharacter::GetWeapon(EWeaponType WeaponType)
 {
+	bUnarmed = false;
+	
 	if(WeaponType == EWeaponType::Pistol)
 	{
 		if(!bPistolUnlocked)
 		{
-			Pistol->SetWeaponActive(true);
-			bPistolUnlocked = true;
-			CurrentWeapon = Pistol;
+			bPistolUnlocked	   = true;
+			CurrentWeapon	   = Pistol;
+			CurrentWeaponIndex = 1;
+			
+			CrosshairHUD->WeaponUnlocked(CurrentWeapon->GetWeaponType());
 		}
 		else
 		{
@@ -275,9 +305,11 @@ void ATPS_PlayerCharacter::GetWeapon(EWeaponType WeaponType)
 	{
 		if(!bRifleUnlocked)
 		{
-			Rifle->SetWeaponActive(true);
-			bRifleUnlocked = true;
-			CurrentWeapon = Rifle;
+			bRifleUnlocked	   = true;
+			CurrentWeapon	   = Rifle;
+			CurrentWeaponIndex = 2;
+			
+			CrosshairHUD->WeaponUnlocked(CurrentWeapon->GetWeaponType());
 		}
 		else
 		{
@@ -289,9 +321,11 @@ void ATPS_PlayerCharacter::GetWeapon(EWeaponType WeaponType)
 	{
 		if(!bShotgunUnlocked)
 		{
-			Shotgun->SetWeaponActive(true);
-			bShotgunUnlocked = true;
-			CurrentWeapon = Shotgun;
+			bShotgunUnlocked   = true;
+			CurrentWeapon	   = Shotgun;
+			CurrentWeaponIndex = 3;
+			
+			CrosshairHUD->WeaponUnlocked(CurrentWeapon->GetWeaponType());
 		}
 		else
 		{
@@ -299,9 +333,43 @@ void ATPS_PlayerCharacter::GetWeapon(EWeaponType WeaponType)
 		}
 	}
 	
-	if(bUnarmed)
+	EquipWeapon();
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerCharacter::SwapWeapon(int index)
+{
+	if(CurrentWeaponIndex == index) return;
+	
+	if(index == 1)
 	{
-		bUnarmed = false;
+		if(!bPistolUnlocked) return;
+		
+		CurrentWeapon	   = Pistol;
+		CurrentWeaponIndex = index;
+		
+		EquipWeapon();
+	}
+	
+	 if(index == 2)
+	 {
+		if(!bRifleUnlocked) return;
+		 
+		CurrentWeapon	   = Rifle;
+		CurrentWeaponIndex = index;
+		bUnarmed		   = false;
+	 	
+		EquipWeapon();
+	 }
+
+	if(index == 3)
+	{
+		if(!bShotgunUnlocked) return;
+
+		CurrentWeapon	   = Shotgun;
+		CurrentWeaponIndex = index;
+		bUnarmed		   = false;
+		
 		EquipWeapon();
 	}
 }
@@ -312,9 +380,26 @@ void ATPS_PlayerCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	CrosshairHUD = CreateWidget<UCrosshairHUD>(GetWorld(), CrosshairWidget);
-
+	CrosshairHUD->AddToViewport();
+	
 	BindTimeLines();
 	CreateWeapons();
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerCharacter::BeginDestroy()
+{
+	Super::BeginDestroy();
+
+	if(GetWorld())
+	{
+		GetWorld()->GetTimerManager().ClearTimer(AnimTimerHandle);
+	}
+
+	if(Del.IsBound())
+	{
+		Del.Unbind();
+	}
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -337,25 +422,51 @@ void ATPS_PlayerCharacter::CreateWeapons()
 	Pistol->AttachToComponent(GetMesh(), AttachmentRules, "PistolSocket");
 	Pistol->SetWeaponActive(false);
 
-	// FActorSpawnParameters RifleSpawnParameter;
-	// RifleSpawnParameter.Name = "Rifle";
-	// RifleSpawnParameter.Owner = this;
-	// Rifle = GetWorld()->SpawnActor<ABaseWeapon>(RifleBase, GetActorLocation(), GetActorRotation(), RifleSpawnParameter);
-	// Rifle->AttachToComponent(GetMesh(), AttachmentRules, "BigGunSocket");
-	// Rifle->SetWeaponActive(false);
-//
-	//FActorSpawnParameters ShotgunSpawnParameter;
-	//ShotgunSpawnParameter.Name = "Rifle";
-	//ShotgunSpawnParameter.Owner = this;
-	//Rifle = GetWorld()->SpawnActor<ABaseWeapon>(ShotgunBase, GetActorLocation(), GetActorRotation(), ShotgunSpawnParameter);
-	//Rifle->AttachToComponent(GetMesh(), AttachmentRules, "BigGunSocket");
-	//Rifle->SetWeaponActive(false);
+	FActorSpawnParameters RifleSpawnParameter;
+	RifleSpawnParameter.Name = "Rifle";
+	RifleSpawnParameter.Owner = this;
+	Rifle = GetWorld()->SpawnActor<ABaseWeapon>(RifleBase, GetActorLocation(), GetActorRotation(), RifleSpawnParameter);
+	Rifle->AttachToComponent(GetMesh(), AttachmentRules, "BigGunSocket");
+	Rifle->SetWeaponActive(false);
+
+	FActorSpawnParameters ShotgunSpawnParameter;
+	ShotgunSpawnParameter.Name = "Shotgun";
+	ShotgunSpawnParameter.Owner = this;
+	Shotgun = GetWorld()->SpawnActor<ABaseWeapon>(ShotgunBase, GetActorLocation(), GetActorRotation(), ShotgunSpawnParameter);
+	Shotgun->AttachToComponent(GetMesh(), AttachmentRules, "BigGunSocket");
+	Shotgun->SetWeaponActive(false);
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerCharacter::EquipWeapon()
 {
-	PlayAnimMontage(CurrentWeapon->GetEquipAnimMontage());
+	if(LastWeapon != nullptr && LastWeapon != CurrentWeapon)
+	{
+		LastWeapon->SetWeaponActive(false);
+	}
+
+	LastWeapon = CurrentWeapon;
+	CurrentWeapon->SetWeaponActive(true);
+	CrosshairHUD->ChangeEquippedWeapon(CurrentWeapon->GetWeaponType());
+
+	auto t = PlayAnimMontage(CurrentWeapon->GetEquipAnimMontage());
+	
+	bCanShoot   = false;
+	bCanUnEquip = false;
+
+	if(!GetWorldTimerManager().IsTimerActive(AnimTimerHandle))
+	{
+		Del.BindLambda([&]
+		{
+			if(bIsAiming)
+				PlayAnimMontage(CurrentWeapon->GetAimAnimMontage());
+
+			bCanShoot   = true;
+			bCanUnEquip = true;
+		});
+			
+		GetWorldTimerManager().SetTimer(AnimTimerHandle,Del , t,false);
+	}
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------

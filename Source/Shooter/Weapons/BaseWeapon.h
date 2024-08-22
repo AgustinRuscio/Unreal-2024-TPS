@@ -43,6 +43,7 @@ public:
 	FORCEINLINE UAnimMontage* GetAimAnimMontage() const { return AimAnimMontage; };
 	FORCEINLINE UAnimMontage* GetReloadAnimMontage() const { return ReloadAnimMontage; };
 	FORCEINLINE UAnimMontage* GetEquipAnimMontage() const { return EquipdAnimMontage; };
+	FORCEINLINE EWeaponType GetWeaponType() const { return WeaponType; };
 	
 	virtual void OnAim();
 	virtual void OnAimEnd();
@@ -121,9 +122,9 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly, Category = VFX)
 	UAnimMontage* EquipdAnimMontage;
-
+	
 	UPROPERTY(EditDefaultsOnly, Category = VFX)
-	UAnimSequence* ShootAnim;
+	UAnimSequence* GunShootAnim;
 	
 	UPROPERTY(EditDefaultsOnly, Category = VFX)
 	UAnimSequence* ReloadAnim;
@@ -143,8 +144,6 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void BeginDestroy() override;
 	
-	virtual void Tick(float DeltaTime) override;
-	
 private:
 	
 	//*****************************************************************************//
@@ -154,6 +153,8 @@ private:
 	//*****************************************************************************//
 	//								PRIVATE METHODS								...// 
 	//*****************************************************************************//
+
+	float CalculateDamage(float Distance, FName BoneHittedName, class IIDamageable* OtherActor);
 	
 	void UnbindTimers();
 };

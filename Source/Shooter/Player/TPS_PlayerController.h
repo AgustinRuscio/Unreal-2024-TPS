@@ -69,6 +69,9 @@ private:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	const class UInputAction* InputActionShoot;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	const class UInputAction* InputActionUnEquip;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	const class UInputAction* InputActionReload;
@@ -78,6 +81,15 @@ private:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	const class UInputAction* InputActionInteract;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	const class UInputAction* InputActionFirstWeapon;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	const class UInputAction* InputActionSecondWeapon;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	const class UInputAction* InputActionThirdWeapon;
 	
 	//*****************************************************************************//
 	//								PRIVATE METHODS								...// 
@@ -99,6 +111,7 @@ private:
 
 	void AimStart(const FInputActionValue& value);
 	void AimEnd(const FInputActionValue& value);
+	void UnEquipStart(const FInputActionValue& value);
 	
 	void ShootStart(const FInputActionValue& value);
 	void ShootEnd(const FInputActionValue& value);
@@ -107,4 +120,8 @@ private:
 	void MeleeAttackStart(const FInputActionValue& value);
 	
 	void InteractStart(const FInputActionValue& value);
+	
+	void FirstWeapon(const FInputActionValue& value);
+	void SecondWeapon(const FInputActionValue& value);
+	void ThirdWeapon(const FInputActionValue& value);
 };

@@ -60,7 +60,8 @@ public:
 	
 	void AimStart();
 	void AimEnd();
-
+	void UnEquipWeapon();
+	
 	void ShootStart();
 	void ShootEnd();
 
@@ -68,10 +69,11 @@ public:
 	
 	void Interaction();
 	
-	
 	void SetInteractable(class ABaseInteractor* NewInteractable);
 	void RemoveInteractable();
 	void GetWeapon(EWeaponType WeaponType);
+
+	void SwapWeapon(int index);
 	
 protected:
 	
@@ -105,9 +107,12 @@ private:
 	bool bIsMoving;
 	bool bIsSprinting;
 
+	bool bCanShoot = true;
+	bool bCanUnEquip = true;
 	bool bCanAim;
 	bool bUnarmed;
 
+	int CurrentWeaponIndex = 0;
 	
 	UPROPERTY(EditDefaultsOnly, Category = Weapons)
 	TSubclassOf<class ABaseWeapon> PistolBase;
@@ -122,12 +127,17 @@ private:
 	class ABaseWeapon* Shotgun;
 
 	class ABaseWeapon* CurrentWeapon;
+	class ABaseWeapon* LastWeapon;
 	
 	UPROPERTY(EditDefaultsOnly, Category = VFX)
 	TSubclassOf<class UCrosshairHUD> CrosshairWidget;
 	UCrosshairHUD* CrosshairHUD;
 	
 	EPlayerStateAction CurrentState;
+
+
+	FTimerHandle AnimTimerHandle;
+	FTimerDelegate Del;
 	
 	FTimeline TimeLineSpringArmMoving;
 	FTimeline TimeLineSpringArmAiming;
@@ -142,6 +152,7 @@ private:
 	//*****************************************************************************//
 	
 	virtual void BeginPlay() override;
+	virtual void BeginDestroy() override;
 	
 	virtual void Tick(float DeltaTime) override;
 

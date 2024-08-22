@@ -232,25 +232,6 @@ void ATPS_PlayerCharacter::ReloadWeapon()
 	if(!CurrentWeapon->CanReload()) return;
 	
 	CurrentWeapon->Reload();
-	
-	auto t = PlayAnimMontage(CurrentWeapon->GetReloadAnimMontage());
-
-	bCanShoot   = false;
-	bCanUnEquip = false;
-
-	if(!GetWorldTimerManager().IsTimerActive(AnimTimerHandle))
-	{
-		Del.BindLambda([&]
-		{
-			if(bIsAiming)
-				PlayAnimMontage(CurrentWeapon->GetAimAnimMontage());
-
-			bCanShoot   = true;
-			bCanUnEquip = true;
-		});
-			
-		GetWorldTimerManager().SetTimer(AnimTimerHandle,Del , t,false);
-	}
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -420,6 +401,7 @@ void ATPS_PlayerCharacter::CreateWeapons()
 	PistolSpawnParameter.Owner = this;
 	Pistol = GetWorld()->SpawnActor<ABaseWeapon>(PistolBase, GetActorLocation(), GetActorRotation(), PistolSpawnParameter);
 	Pistol->AttachToComponent(GetMesh(), AttachmentRules, "PistolSocket");
+	Pistol->OnReload.AddDynamic(this, &ATPS_PlayerCharacter::OnReloadWeapon);
 	Pistol->SetWeaponActive(false);
 
 	FActorSpawnParameters RifleSpawnParameter;
@@ -427,6 +409,7 @@ void ATPS_PlayerCharacter::CreateWeapons()
 	RifleSpawnParameter.Owner = this;
 	Rifle = GetWorld()->SpawnActor<ABaseWeapon>(RifleBase, GetActorLocation(), GetActorRotation(), RifleSpawnParameter);
 	Rifle->AttachToComponent(GetMesh(), AttachmentRules, "BigGunSocket");
+	Rifle->OnReload.AddDynamic(this, &ATPS_PlayerCharacter::OnReloadWeapon);
 	Rifle->SetWeaponActive(false);
 
 	FActorSpawnParameters ShotgunSpawnParameter;
@@ -434,6 +417,7 @@ void ATPS_PlayerCharacter::CreateWeapons()
 	ShotgunSpawnParameter.Owner = this;
 	Shotgun = GetWorld()->SpawnActor<ABaseWeapon>(ShotgunBase, GetActorLocation(), GetActorRotation(), ShotgunSpawnParameter);
 	Shotgun->AttachToComponent(GetMesh(), AttachmentRules, "BigGunSocket");
+	Shotgun->OnReload.AddDynamic(this, &ATPS_PlayerCharacter::OnReloadWeapon);
 	Shotgun->SetWeaponActive(false);
 }
 
@@ -451,6 +435,29 @@ void ATPS_PlayerCharacter::EquipWeapon()
 
 	auto t = PlayAnimMontage(CurrentWeapon->GetEquipAnimMontage());
 	
+	bCanShoot   = false;
+	bCanUnEquip = false;
+
+	if(!GetWorldTimerManager().IsTimerActive(AnimTimerHandle))
+	{
+		Del.BindLambda([&]
+		{
+			if(bIsAiming)
+				PlayAnimMontage(CurrentWeapon->GetAimAnimMontage());
+
+			bCanShoot   = true;
+			bCanUnEquip = true;
+		});
+			
+		GetWorldTimerManager().SetTimer(AnimTimerHandle,Del , t,false);
+	}
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerCharacter::OnReloadWeapon()
+{
+	auto t = PlayAnimMontage(CurrentWeapon->GetReloadAnimMontage());
+
 	bCanShoot   = false;
 	bCanUnEquip = false;
 

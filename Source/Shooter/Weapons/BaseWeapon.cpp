@@ -22,6 +22,7 @@ ABaseWeapon::ABaseWeapon()
 	bCanFire = true;
 }
 
+//---------------------------------------------------------------------------------------------------------------------------------------
 bool ABaseWeapon::CanReload() const
 {
 	return (AmmoStorage > 0 && CurrentAmmo < MaxAmmoInCharger);
@@ -82,6 +83,8 @@ void ABaseWeapon::Reload()
 	if(AmmoStorage <= 0) return;
 	if(CurrentAmmo == MaxAmmoInCharger) return;
 
+	OnReload.Broadcast();
+	
 	if(AmmoStorage >= MaxAmmoInCharger)
 	{
 		AmmoStorage -= (MaxAmmoInCharger - CurrentAmmo);
@@ -165,6 +168,8 @@ bool ABaseWeapon::BulletsCheck()
 
 			if(!GetWorld()->GetTimerManager().IsTimerActive(NoBulletsTimerHandle))
 				GetWorld()->GetTimerManager().SetTimer(NoBulletsTimerHandle, NoBulletsTimerDelegate, NoBulletSound->Duration, false);
+
+			Reload();
 		}
 		return false;
 	}

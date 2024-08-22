@@ -10,6 +10,8 @@
 #include "Shooter/EnumContainer.h"
 #include "BaseWeapon.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnReload);
+
 UCLASS()
 class SHOOTER_API ABaseWeapon : public AActor
 {
@@ -31,6 +33,8 @@ public:
 	//								PUBLIC VARIABLES							   // 
 	//*****************************************************************************//
 
+	FOnReload OnReload;
+	
 	//*****************************************************************************//
 	//								PUBLIC METHODS								   // 
 	//*****************************************************************************//

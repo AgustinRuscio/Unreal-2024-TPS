@@ -43,7 +43,7 @@ void ABaseInteractor::BeginPlay()
 	
 	InteractionWidget = CreateWidget(GetWorld(), InteractionUserWidget);
 	
-	Player = CastChecked<ATPS_PlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	Player = Cast<ATPS_PlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------

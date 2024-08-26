@@ -36,6 +36,7 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* SpringArmComp;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* CameraComponent;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "VFX")
@@ -74,6 +75,9 @@ public:
 	void GetWeapon(EWeaponType WeaponType);
 
 	void SwapWeapon(int index);
+
+	void TakeCover();
+	void SetCoverObject(class ABaseCoverObject* currentCover);
 	
 protected:
 	
@@ -91,6 +95,9 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly)
 	bool bShotgunUnlocked;
+
+	UPROPERTY(BlueprintReadOnly)
+	bool bIsCrouching;
 	
 	//*****************************************************************************//
 	//								PROTECTED METHODS							   // 
@@ -111,7 +118,8 @@ private:
 	bool bCanUnEquip = true;
 	bool bCanAim;
 	bool bUnarmed;
-
+	bool bIsTakingCover;
+	
 	int CurrentWeaponIndex = 0;
 	
 	UPROPERTY(EditDefaultsOnly, Category = Weapons)
@@ -146,6 +154,7 @@ private:
 	UCurveFloat* FloatCurveSpringArmLength;
 
 	class ABaseInteractor* CurrentInteractor;
+	class ABaseCoverObject* CurrentCoverObject;
 	
 	//*****************************************************************************//
 	//								PRIVATE METHODS								...// 
@@ -159,6 +168,9 @@ private:
 	void CreateWeapons();
 	void EquipWeapon();
 
+	void TakeCurrentCover();
+	void LeftCurrentCover();
+	
 	UFUNCTION()
 	void OnReloadWeapon();
 	

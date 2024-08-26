@@ -91,6 +91,9 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	const class UInputAction* InputActionThirdWeapon;
 	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	const class UInputAction* InputActionTTakeCover;
+	
 	//*****************************************************************************//
 	//								PRIVATE METHODS								...// 
 	//*****************************************************************************//
@@ -124,4 +127,6 @@ private:
 	void FirstWeapon(const FInputActionValue& value);
 	void SecondWeapon(const FInputActionValue& value);
 	void ThirdWeapon(const FInputActionValue& value);
+	
+	void TakeCover(const FInputActionValue& value);
 };

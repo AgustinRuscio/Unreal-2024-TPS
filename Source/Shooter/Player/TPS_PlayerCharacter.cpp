@@ -13,6 +13,7 @@
 #include "Shooter/Weapons/Pistol.h"
 #include "Shooter/Widgets/CrosshairHUD.h"
 #include "Shooter/EnumContainer.h"
+#include "Shooter/EnvironmentActors/BaseCoverObject.h"
 
 static float CurrentSpringArmLength;
 static FVector CurrentSpringArmSocketOffset;
@@ -49,7 +50,7 @@ void ATPS_PlayerCharacter::MovePlayer(FVector2d Direction)
 {
 	if(!bCanMove) return;
 	
-	if(Direction.Y != 0)
+	if(Direction.Y != 0 && !bIsTakingCover)
 	{
 		const FVector& CameraForward = CameraComponent->GetForwardVector();
 		AddMovementInput(CameraForward, Direction.Y);
@@ -356,6 +357,21 @@ void ATPS_PlayerCharacter::SwapWeapon(int index)
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerCharacter::TakeCover()
+{
+	if(bIsTakingCover)
+		LeftCurrentCover();
+	else
+		TakeCurrentCover();
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerCharacter::SetCoverObject(ABaseCoverObject* currentCover)
+{
+	CurrentCoverObject = currentCover;
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -451,6 +467,28 @@ void ATPS_PlayerCharacter::EquipWeapon()
 			
 		GetWorldTimerManager().SetTimer(AnimTimerHandle,Del , t,false);
 	}
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerCharacter::TakeCurrentCover()
+{
+	if(CurrentCoverObject == nullptr || bIsTakingCover) return;
+
+	bIsTakingCover							 = true;
+	bIsCrouching							 = CurrentCoverObject->GetCrouchCover();
+	bUseControllerRotationYaw				 = false;
+	CameraComponent->bUsePawnControlRotation = false;
+	FaceRotation(CurrentCoverObject->GetCoverRotation());
+
+	SetActorRotation(CurrentCoverObject->GetCoverRotation());
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerCharacter::LeftCurrentCover()
+{
+	bUseControllerRotationYaw				 = true;
+	bIsCrouching							 = false;
+	bIsTakingCover							 = false;
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------

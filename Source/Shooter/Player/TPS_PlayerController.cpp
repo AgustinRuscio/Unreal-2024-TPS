@@ -68,6 +68,8 @@ void ATPS_PlayerController::BindRegularInputs()
 		EnhancedComponent->BindAction(InputActionFirstWeapon, ETriggerEvent::Started, this, &ATPS_PlayerController::FirstWeapon);
 		EnhancedComponent->BindAction(InputActionSecondWeapon, ETriggerEvent::Started, this, &ATPS_PlayerController::SecondWeapon);
 		EnhancedComponent->BindAction(InputActionThirdWeapon, ETriggerEvent::Started, this, &ATPS_PlayerController::ThirdWeapon);
+		
+		EnhancedComponent->BindAction(InputActionTTakeCover, ETriggerEvent::Started, this, &ATPS_PlayerController::TakeCover);
 	}
 }
 
@@ -172,4 +174,10 @@ void ATPS_PlayerController::SecondWeapon(const FInputActionValue& value)
 void ATPS_PlayerController::ThirdWeapon(const FInputActionValue& value)
 {
 	PlayerCharacterRef->SwapWeapon(3);
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerController::TakeCover(const FInputActionValue& value)
+{
+	PlayerCharacterRef->TakeCover();
 }

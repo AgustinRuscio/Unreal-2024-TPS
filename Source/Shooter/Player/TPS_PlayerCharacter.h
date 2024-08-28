@@ -164,7 +164,7 @@ private:
 	virtual void BeginDestroy() override;
 	
 	virtual void Tick(float DeltaTime) override;
-
+	
 	void CreateWeapons();
 	void EquipWeapon();
 

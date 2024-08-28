@@ -36,6 +36,12 @@ public:
 	//								PUBLIC METHODS								   // 
 	//*****************************************************************************//
 
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE bool GetWillPatrol() { return bWillPatrol; };
+	
+	UFUNCTION(BlueprintCallable)
+	class ATargetPoint* GetCurrentPatrolPoint();
+	
 	virtual FName GetHeadBone() override;
 	
 	virtual void OnHit(float DamageTaken, FName& HiitedBoneName) override;
@@ -58,17 +64,39 @@ protected:
 	//*****************************************************************************//
 	//								PROTECTED METHODS							   // 
 	//*****************************************************************************//
+
+	virtual void BeginPlay() override;
+
+	UFUNCTION(BlueprintCallable)
+	void ShootStart();
+
+	UFUNCTION(BlueprintCallable)
+	void ChangeToNextWaypoint();
 	
 private:
 	
+
 	//*****************************************************************************//
 	//								PRIVATE VARIABLES							   // 
 	//*****************************************************************************//
 
+	UPROPERTY(EditAnywhere, Category = Settings)
+	bool bWillPatrol;
+
+	int PatrolIndex = 0;
+	
+	UPROPERTY(EditAnywhere, Category = Settings)
+	float ShootDistance;
+	UPROPERTY(EditAnywhere, Category = Settings)
+	float ShootDamage;
+	
 	float DeathImpulse;
 	
 	FName HittedBoneName;
 
+	UPROPERTY(EditAnywhere, Category = Patrol)
+	TArray<class ATargetPoint*> PatrolPoints;
+	
 	UPROPERTY(EditDefaultsOnly, Category = SFX)
 	USoundBase* DeathSound;
 	
@@ -77,6 +105,9 @@ private:
 	
 	UPROPERTY(EditDefaultsOnly, Category = VFX)
 	TSubclassOf<class ADecalActor> BloodFloor;
+
+	class UBlackboardComponent* BlackBoard;
+	
 	
 	//*****************************************************************************//
 	//								PRIVATE METHODS								...// 

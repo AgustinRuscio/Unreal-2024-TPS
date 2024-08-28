@@ -6,6 +6,7 @@
 #include "BaseWeapon.h"
 
 #include "Blueprint/UserWidget.h"
+#include "Components/PawnNoiseEmitterComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Shooter/Interface/IDamageable.h"
 #include "Shooter/Widgets/WeaponHUD.h"
@@ -18,8 +19,10 @@ ABaseWeapon::ABaseWeapon()
  	PrimaryActorTick.bCanEverTick = true;
 
 	SkeletalMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>("Skeletal Mesh");
+	NoiseEmitter =  CreateDefaultSubobject<UPawnNoiseEmitterComponent>("Noise Emitter");
 	
 	bCanFire = true;
+	bReplicates = true;
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -44,6 +47,8 @@ void ABaseWeapon::OnAimEnd()
 void ABaseWeapon::FireWeapon()
 {
 	bCanFire = false;
+
+	NoiseEmitter->MakeNoise(this, 10, GetActorLocation());
 
 	if(bIsAutomatic)
 	{

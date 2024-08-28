@@ -28,7 +28,10 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = Mesh)
 	USkeletalMeshComponent* SkeletalMeshComponent;
-	
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = AI, meta = (AllowPrivateAccess = "true"))
+	class UPawnNoiseEmitterComponent* NoiseEmitter;
+
 	//*****************************************************************************//
 	//								PUBLIC VARIABLES							   // 
 	//*****************************************************************************//

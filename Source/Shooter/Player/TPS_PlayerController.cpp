@@ -18,7 +18,7 @@ void ATPS_PlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	PlayerCharacterRef = CastChecked<ATPS_PlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	PlayerCharacterRef = Cast<ATPS_PlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 
 	BindRegularInputs();
 }
@@ -26,7 +26,7 @@ void ATPS_PlayerController::BeginPlay()
 //---------------------------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerController::UnbindInputs()
 {
-	if(UEnhancedInputComponent* EnhancedComponent = CastChecked<UEnhancedInputComponent>(InputComponent))
+	if(UEnhancedInputComponent* EnhancedComponent = Cast<UEnhancedInputComponent>(InputComponent))
 	{
 		EnhancedComponent->ClearActionBindings();
 	}
@@ -37,12 +37,13 @@ void ATPS_PlayerController::BindRegularInputs()
 {
 	UnbindInputs();
 
-	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer());
-    
-	Subsystem->ClearAllMappings();
-	Subsystem->AddMappingContext(MappingContext, 0);
+	if(UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
+	{
+		Subsystem->ClearAllMappings();
+		Subsystem->AddMappingContext(MappingContext, 0);
+	}
 
-	if(UEnhancedInputComponent* EnhancedComponent = CastChecked<UEnhancedInputComponent>(InputComponent))
+	if(UEnhancedInputComponent* EnhancedComponent = Cast<UEnhancedInputComponent>(InputComponent))
 	{
 		EnhancedComponent->BindAction(InputActionMovePlayer, ETriggerEvent::Started, this, &ATPS_PlayerController::MovementStart);
 		EnhancedComponent->BindAction(InputActionMovePlayer, ETriggerEvent::Triggered, this, &ATPS_PlayerController::MovePlayerCharacter);

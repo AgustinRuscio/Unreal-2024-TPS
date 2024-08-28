@@ -5,11 +5,15 @@
 
 #include "BaseEnemy.h"
 
+#include "BehaviorTree/BehaviorTree.h"
 #include "Components/ArrowComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Engine/DecalActor.h"
 #include "Kismet/GameplayStatics.h"
+#include "Engine/TargetPoint.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Perception/AIPerceptionComponent.h"
+#include "Shooter/EnemyAIController.h"
 
 //---------------------------------------------------------------------------------------------------------------------------------------
 ABaseEnemy::ABaseEnemy()
@@ -25,6 +29,11 @@ ABaseEnemy::ABaseEnemy()
 	
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>("Health Component");
 	HealthComponent->OnDeath.AddDynamic(this, &ABaseEnemy::OnActorDestroyed);
+}
+
+ATargetPoint* ABaseEnemy::GetCurrentPatrolPoint()
+{
+	return PatrolPoints[PatrolIndex];
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -46,6 +55,51 @@ void ABaseEnemy::OnActorDestroyed()
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 
 	DeathVFX();
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ABaseEnemy::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	auto AIController = CastChecked<AEnemyAIController>(GetController());
+	BlackBoard = AIController->GetBlackboardComponent();
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ABaseEnemy::ShootStart()
+{
+	FVector Start = GetActorLocation();
+	
+	FVector End = Start + GetActorForwardVector() * ShootDistance;
+
+	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
+	ObjectTypes.Add(static_cast<EObjectTypeQuery>(ECollisionChannel::ECC_Pawn));
+	
+	TArray<AActor*> IgnoredActors;
+	IgnoredActors.Add(this);
+
+	FHitResult OutHit;
+
+	if(UKismetSystemLibrary::SphereTraceSingleForObjects(GetWorld(), Start, End, 1.0f, ObjectTypes,
+		false, IgnoredActors, EDrawDebugTrace::ForDuration, OutHit, true, FColor::Red, FColor::Green, 3.0f ))
+	{
+		if(IIDamageable* damageable = Cast<IIDamageable>(OutHit.GetActor()))
+		{
+			damageable->OnHit(ShootDamage,	OutHit.BoneName);
+		}
+	}
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ABaseEnemy::ChangeToNextWaypoint()
+{
+	++PatrolIndex;
+
+	if(PatrolIndex > PatrolPoints.Num()-1)
+	{
+		PatrolIndex = 0;
+	}
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------

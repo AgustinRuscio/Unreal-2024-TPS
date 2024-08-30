@@ -35,14 +35,36 @@ ATPS_PlayerCharacter::ATPS_PlayerCharacter()
 
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>("CameraComp");
 	CameraComponent->SetupAttachment(SpringArmComp);
-
 	GetMesh()->bReceivesDecals = false;
 	bUseControllerRotationYaw  = false;
+
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>("Health Component");
+	HealthComponent->OnDeath.AddDynamic(this, &ATPS_PlayerCharacter::OnActorDestroyed);
 	
 	bCanMove	   = true;
 	bCanMoveCamera = true;
 	bIsSprinting   = false;
 	bUnarmed	   = true;
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+FName ATPS_PlayerCharacter::GetHeadBone() const
+{
+	return HeadBoneName;
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerCharacter::OnHit(float DamageTaken, float ShooImpulse, FName& BoneHitted)
+{
+	HealthComponent->TakeDamage(DamageTaken);
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerCharacter::OnActorDestroyed()
+{
+	//Morir
+	bCanMove = false;
+	bCanShoot = false;
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -215,7 +237,7 @@ void ATPS_PlayerCharacter::ShootStart()
 {
 	if(bUnarmed || !bIsAiming || !bCanShoot) return;
 	
-	CurrentWeapon->FireWeapon();
+	CurrentWeapon->FireWeapon(CameraComponent->GetComponentLocation(), CameraComponent->GetComponentRotation().Vector());
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------

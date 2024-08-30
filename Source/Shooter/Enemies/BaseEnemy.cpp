@@ -5,9 +5,9 @@
 
 #include "BaseEnemy.h"
 
-#include "BehaviorTree/BehaviorTree.h"
 #include "Components/ArrowComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Engine/DecalActor.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/TargetPoint.h"
@@ -31,19 +31,20 @@ ABaseEnemy::ABaseEnemy()
 	HealthComponent->OnDeath.AddDynamic(this, &ABaseEnemy::OnActorDestroyed);
 }
 
-ATargetPoint* ABaseEnemy::GetCurrentPatrolPoint()
+ATargetPoint* ABaseEnemy::GetCurrentPatrolPoint() const
 {
 	return PatrolPoints[PatrolIndex];
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
-FName ABaseEnemy::GetHeadBone() { return HeadBoneName; }
+FName ABaseEnemy::GetHeadBone() const { return HeadBoneName; }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
-void ABaseEnemy::OnHit(float DamageTaken, FName& HiitedBoneName)
+void ABaseEnemy::OnHit(float DamageTaken,float ShootImpulse, FName& HiitedBoneName)
 {
 	HealthComponent->TakeDamage(DamageTaken);
 	HittedBoneName = HiitedBoneName;
+	DeathImpulse = ShootImpulse;
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -58,12 +59,22 @@ void ABaseEnemy::OnActorDestroyed()
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
+void ABaseEnemy::PlayerOnSight(bool bAwareOfPlayer)
+{
+	bIsAwareOfPlayer = bAwareOfPlayer;
+
+	GetCharacterMovement()->MaxWalkSpeed = bIsAwareOfPlayer ? AwareOfPlayerSpeed : RegularSpeed;
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
 void ABaseEnemy::BeginPlay()
 {
 	Super::BeginPlay();
 	
 	auto AIController = CastChecked<AEnemyAIController>(GetController());
 	BlackBoard = AIController->GetBlackboardComponent();
+
+	GetCharacterMovement()->MaxWalkSpeed = RegularSpeed;
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -86,7 +97,7 @@ void ABaseEnemy::ShootStart()
 	{
 		if(IIDamageable* damageable = Cast<IIDamageable>(OutHit.GetActor()))
 		{
-			damageable->OnHit(ShootDamage,	OutHit.BoneName);
+			damageable->OnHit(ShootDamage, 3,	OutHit.BoneName);
 		}
 	}
 }

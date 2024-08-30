@@ -37,17 +37,26 @@ public:
 	//*****************************************************************************//
 
 	UFUNCTION(BlueprintCallable)
-	FORCEINLINE bool GetWillPatrol() { return bWillPatrol; };
+	FORCEINLINE bool GetWillPatrol() const { return bWillPatrol; };
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE bool GetIsAwareOfPlayerPresence() const { return bIsAwareOfPlayer; };
 	
 	UFUNCTION(BlueprintCallable)
-	class ATargetPoint* GetCurrentPatrolPoint();
+	FORCEINLINE float GetShootDistance() const { return ShootDistance; };
 	
-	virtual FName GetHeadBone() override;
+	UFUNCTION(BlueprintCallable)
+	class ATargetPoint* GetCurrentPatrolPoint() const;
 	
-	virtual void OnHit(float DamageTaken, FName& HiitedBoneName) override;
+	virtual FName GetHeadBone() const override;
+	
+	virtual void OnHit(float DamageTaken,float ShootImpulse, FName& HiitedBoneName) override;
 
 	UFUNCTION()
 	virtual void OnActorDestroyed() override;
+
+	UFUNCTION(BlueprintCallable)
+	void PlayerOnSight(bool bAwareOfPlayer);
 	
 protected:
 	
@@ -55,6 +64,14 @@ protected:
 	//								PROTECTED VARIABLES							   // 
 	//*****************************************************************************//
 
+	UPROPERTY(EditDefaultsOnly, Category = Settings)
+	float RegularSpeed;
+	
+	UPROPERTY(EditDefaultsOnly, Category = Settings)
+	float AwareOfPlayerSpeed;
+	
+	bool bIsAwareOfPlayer;
+	
 	UPROPERTY(EditDefaultsOnly, Category = Settings)
 	FName HeadBoneName;
 
@@ -75,7 +92,6 @@ protected:
 	
 private:
 	
-
 	//*****************************************************************************//
 	//								PRIVATE VARIABLES							   // 
 	//*****************************************************************************//
@@ -87,6 +103,7 @@ private:
 	
 	UPROPERTY(EditAnywhere, Category = Settings)
 	float ShootDistance;
+	
 	UPROPERTY(EditAnywhere, Category = Settings)
 	float ShootDamage;
 	

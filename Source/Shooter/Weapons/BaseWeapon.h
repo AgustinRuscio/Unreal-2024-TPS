@@ -28,10 +28,7 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = Mesh)
 	USkeletalMeshComponent* SkeletalMeshComponent;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = AI, meta = (AllowPrivateAccess = "true"))
-	class UPawnNoiseEmitterComponent* NoiseEmitter;
-
+	
 	//*****************************************************************************//
 	//								PUBLIC VARIABLES							   // 
 	//*****************************************************************************//
@@ -51,11 +48,12 @@ public:
 	FORCEINLINE UAnimMontage* GetReloadAnimMontage() const { return ReloadAnimMontage; };
 	FORCEINLINE UAnimMontage* GetEquipAnimMontage() const { return EquipdAnimMontage; };
 	FORCEINLINE EWeaponType GetWeaponType() const { return WeaponType; };
-	
+
+
 	virtual void OnAim();
 	virtual void OnAimEnd();
 	
-	virtual void FireWeapon();
+	virtual void FireWeapon(FVector StartShootPoint, FVector ForwardShootPoint);
 	virtual void FireEnd();
 	virtual void Reload();
 
@@ -89,18 +87,12 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = Settings)
 	float FireRate;
-
-	UPROPERTY(EditDefaultsOnly, Category = Settings)
-	float GunSpread;
-
-	UPROPERTY(EditDefaultsOnly, Category = Settings)
-	float GunMaxDistance;
-
-	UPROPERTY(EditDefaultsOnly, Category = Settings)
-	float BaseDamage;
-
+	
 	UPROPERTY(EditDefaultsOnly, Category = Settings)
 	EWeaponType WeaponType;
+
+	UPROPERTY(EditDefaultsOnly)
+	class UShootComponent* ShootComponent;
 	
 	FTimerHandle FireRateTimerHandle;
 	FTimerDelegate FireRateTimerDelegate;
@@ -143,10 +135,6 @@ protected:
 
 	bool CanFireCheck() const;
 	bool BulletsCheck();
-
-	FVector CalculateGunSpread(const FVector& Forward) const;
-
-	void CheckHited(FHitResult& hit);
 	
 	virtual void BeginPlay() override;
 	virtual void BeginDestroy() override;
@@ -161,7 +149,5 @@ private:
 	//								PRIVATE METHODS								...// 
 	//*****************************************************************************//
 
-	float CalculateDamage(float Distance, FName BoneHittedName, class IIDamageable* OtherActor);
-	
 	void UnbindTimers();
 };

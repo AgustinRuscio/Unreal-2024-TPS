@@ -17,10 +17,10 @@ AExplosiveBarrel::AExplosiveBarrel()
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
-FName AExplosiveBarrel::GetHeadBone() { return "None"; }
+FName AExplosiveBarrel::GetHeadBone() const { return "None"; }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
-void AExplosiveBarrel::OnHit(float DamageTaken, FName& BoneHitted)
+void AExplosiveBarrel::OnHit(float DamageTaken, float ShootImpulse, FName& BoneHitted)
 {
 	ExplosiveArea();
 
@@ -48,8 +48,8 @@ void AExplosiveBarrel::ExplosiveArea()
 	{
 		if(IIDamageable* Comp = Cast<IIDamageable>(ObjectType))
 		{
-			FName j = "NONE";
-			Comp->OnHit(ExplosionDamage, j);
+			FName HittedBone = "NONE";
+			Comp->OnHit(ExplosionDamage, ExplosionImpulse, HittedBone);
 		}
 	}
 }

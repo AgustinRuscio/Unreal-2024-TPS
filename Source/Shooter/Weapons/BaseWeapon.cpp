@@ -6,9 +6,8 @@
 #include "BaseWeapon.h"
 
 #include "Blueprint/UserWidget.h"
-#include "Components/PawnNoiseEmitterComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "Shooter/Interface/IDamageable.h"
+#include "Shooter/Components/ShootComponent.h"
 #include "Shooter/Widgets/WeaponHUD.h"
 
 static bool bCanSound = true;
@@ -19,7 +18,8 @@ ABaseWeapon::ABaseWeapon()
  	PrimaryActorTick.bCanEverTick = true;
 
 	SkeletalMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>("Skeletal Mesh");
-	NoiseEmitter =  CreateDefaultSubobject<UPawnNoiseEmitterComponent>("Noise Emitter");
+
+	ShootComponent = CreateDefaultSubobject<UShootComponent>("Shoot Component");
 	
 	bCanFire = true;
 	bReplicates = true;
@@ -44,11 +44,15 @@ void ABaseWeapon::OnAimEnd()
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
-void ABaseWeapon::FireWeapon()
+void ABaseWeapon::FireWeapon(FVector StartShootPoint, FVector ForwardShootPoint)
 {
-	bCanFire = false;
+	if(!CanFireCheck()) return;
 
-	NoiseEmitter->MakeNoise(this, 10, GetActorLocation());
+	if(!BulletsCheck()) return;
+	
+	ShootComponent->SetShootVectors(StartShootPoint, ForwardShootPoint);
+	
+	bCanFire = false;
 
 	if(bIsAutomatic)
 	{
@@ -66,6 +70,8 @@ void ABaseWeapon::FireWeapon()
 	
 	UGameplayStatics::PlayWorldCameraShake(GetWorld(), ShootCameraShake, GetActorLocation(), 5000, 0);
 	UGameplayStatics::PlaySound2D(GetWorld(), ShootSound);
+	
+	ShootComponent->FireWeapon();
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -183,22 +189,6 @@ bool ABaseWeapon::BulletsCheck()
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
-FVector ABaseWeapon::CalculateGunSpread(const FVector& Forward) const
-{
-	return FMath::VRandCone(Forward, FMath::DegreesToRadians(GunSpread));
-}
-
-//---------------------------------------------------------------------------------------------------------------------------------------
-void ABaseWeapon::CheckHited(FHitResult& hit)
-{
-	IIDamageable* damageable = Cast<IIDamageable>(hit.GetActor());
-	
-	if(damageable == nullptr) return;
-	
-	damageable->OnHit(CalculateDamage(hit.Distance, hit.BoneName , damageable),	hit.BoneName);
-}
-
-//---------------------------------------------------------------------------------------------------------------------------------------
 void ABaseWeapon::BeginPlay()
 {
 	Super::BeginPlay();
@@ -227,35 +217,6 @@ void ABaseWeapon::BeginDestroy()
 	Super::BeginDestroy();
 	
 	UnbindTimers();
-}
-
-//---------------------------------------------------------------------------------------------------------------------------------------
-float ABaseWeapon::CalculateDamage(float Distance, FName BoneHittedName, IIDamageable* OtherActor)
-{
-	float damageMultiplier = 1.0f;
-	
-	if(Distance > GunMaxDistance * 0.75f)
-	{
-		damageMultiplier -= (Distance / GunMaxDistance);
-	}
-
-	if(BoneHittedName == OtherActor->GetHeadBone())
-	{
-		damageMultiplier = 100.0f;
-
-		if(Distance> GunMaxDistance * 0.5f)
-		{
-			damageMultiplier -= (Distance / GunMaxDistance);
-		}
-	}
-	
-	damageMultiplier = FMath::Clamp(damageMultiplier, 0.0f, 2.0f);
-
-	float finalDamage = BaseDamage * damageMultiplier;
-
-	UE_LOG(LogTemp, Warning, TEXT("%f"), finalDamage);
-	
-	return finalDamage;
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------

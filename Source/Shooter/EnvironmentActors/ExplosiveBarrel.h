@@ -34,8 +34,8 @@ public:
 	//*****************************************************************************//
 	//								PUBLIC METHODS								   // 
 	//*****************************************************************************//
-virtual FName GetHeadBone() override;
-	virtual void OnHit(float DamageTaken, FName& BoneHitted) override;
+virtual FName GetHeadBone() const override;
+	virtual void OnHit(float DamageTaken, float ShootImpulse, FName& BoneHitted) override;
 	virtual void OnActorDestroyed() override;
 	
 protected:
@@ -59,6 +59,9 @@ private:
 	
 	UPROPERTY(EditDefaultsOnly, Category = Settings)
 	float ExplosionDamage;
+	
+	UPROPERTY(EditDefaultsOnly, Category = Settings)
+	float ExplosionImpulse;
 
 	UPROPERTY(EditDefaultsOnly, Category = Settings)
 	USoundBase* ExplosionSound;

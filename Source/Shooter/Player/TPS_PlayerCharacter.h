@@ -9,6 +9,8 @@
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Character.h"
 #include "Shooter/EnumContainer.h"
+#include "Shooter/Components/HealthComponent.h"
+#include "Shooter/Interface/IDamageable.h"
 #include "TPS_PlayerCharacter.generated.h"
 
 UENUM(BlueprintType)
@@ -20,7 +22,7 @@ enum class EPlayerStateAction : uint8
 };
 
 UCLASS()
-class SHOOTER_API ATPS_PlayerCharacter : public ACharacter
+class SHOOTER_API ATPS_PlayerCharacter : public ACharacter, public IIDamageable
 {
 	GENERATED_BODY()
 
@@ -49,6 +51,13 @@ public:
 	//*****************************************************************************//
 	//								PUBLIC METHODS								   // 
 	//*****************************************************************************//
+
+	virtual FName GetHeadBone() const override;
+	
+	virtual void OnHit(float DamageTaken, float ShooImpulse, FName& BoneHitted) override;
+
+	UFUNCTION()
+	void OnActorDestroyed() override;
 	
 	void MovePlayer(FVector2d Direction);
 	void MovementStart();
@@ -121,6 +130,9 @@ private:
 	bool bIsTakingCover;
 	
 	int CurrentWeaponIndex = 0;
+
+	UPROPERTY(EditDefaultsOnly, Category = Settings)
+	FName HeadBoneName;
 	
 	UPROPERTY(EditDefaultsOnly, Category = Weapons)
 	TSubclassOf<class ABaseWeapon> PistolBase;
@@ -143,7 +155,6 @@ private:
 	
 	EPlayerStateAction CurrentState;
 
-
 	FTimerHandle AnimTimerHandle;
 	FTimerDelegate Del;
 	
@@ -155,6 +166,9 @@ private:
 
 	class ABaseInteractor* CurrentInteractor;
 	class ABaseCoverObject* CurrentCoverObject;
+
+	UPROPERTY(EditDefaultsOnly, Category = Components)
+	UHealthComponent* HealthComponent;
 	
 	//*****************************************************************************//
 	//								PRIVATE METHODS								...// 

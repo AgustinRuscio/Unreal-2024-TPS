@@ -10,9 +10,9 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Engine/DecalActor.h"
 #include "Kismet/GameplayStatics.h"
-#include "Engine/TargetPoint.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "Perception/AIPerceptionComponent.h"
+#include "Shooter/Components/HealthComponent.h"
+#include "Shooter/Components/ShootComponent.h"
 #include "Shooter/EnemyAIController.h"
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -23,12 +23,18 @@ ABaseEnemy::ABaseEnemy()
 	HittedBoneName			   = "NONE";
 	DeathImpulse			   = 1000.f;
 	GetMesh()->bReceivesDecals = false;
+	bIsDeath				   = false;
 
+	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>("Weapon Mesh");
+	WeaponMesh->SetupAttachment(GetMesh(), "GunSocket");
+	
 	SpawnFloorBloodArrow = CreateDefaultSubobject<UArrowComponent>("Arrow Component");
 	SpawnFloorBloodArrow->SetupAttachment(GetMesh());
 	
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>("Health Component");
 	HealthComponent->OnDeath.AddDynamic(this, &ABaseEnemy::OnActorDestroyed);
+
+	ShootComponent = CreateDefaultSubobject<UShootComponent>("Shoot Component");
 }
 
 ATargetPoint* ABaseEnemy::GetCurrentPatrolPoint() const
@@ -50,6 +56,11 @@ void ABaseEnemy::OnHit(float DamageTaken,float ShootImpulse, FName& HiitedBoneNa
 //---------------------------------------------------------------------------------------------------------------------------------------
 void ABaseEnemy::OnActorDestroyed()
 {
+	bIsDeath = true;
+	Controller = nullptr;
+	
+	HealthComponent->DestroyComponent();
+
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	GetMesh()->SetSimulatePhysics(true);
@@ -80,26 +91,10 @@ void ABaseEnemy::BeginPlay()
 //---------------------------------------------------------------------------------------------------------------------------------------
 void ABaseEnemy::ShootStart()
 {
-	FVector Start = GetActorLocation();
+	if(bIsDeath) return;
 	
-	FVector End = Start + GetActorForwardVector() * ShootDistance;
-
-	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
-	ObjectTypes.Add(static_cast<EObjectTypeQuery>(ECollisionChannel::ECC_Pawn));
-	
-	TArray<AActor*> IgnoredActors;
-	IgnoredActors.Add(this);
-
-	FHitResult OutHit;
-
-	if(UKismetSystemLibrary::SphereTraceSingleForObjects(GetWorld(), Start, End, 1.0f, ObjectTypes,
-		false, IgnoredActors, EDrawDebugTrace::ForDuration, OutHit, true, FColor::Red, FColor::Green, 3.0f ))
-	{
-		if(IIDamageable* damageable = Cast<IIDamageable>(OutHit.GetActor()))
-		{
-			damageable->OnHit(ShootDamage, 3,	OutHit.BoneName);
-		}
-	}
+	ShootComponent->SetShootVectors(GetActorLocation(), GetActorForwardVector());
+	ShootComponent->FireWeapon();
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------

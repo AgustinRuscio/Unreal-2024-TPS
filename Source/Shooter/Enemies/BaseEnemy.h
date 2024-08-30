@@ -7,7 +7,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "Shooter/Components/HealthComponent.h"
+#include "Shooter/EnumContainer.h"
 #include "Shooter/Interface/IDamageable.h"
 #include "BaseEnemy.generated.h"
 
@@ -26,6 +26,9 @@ public:
 	ABaseEnemy();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Components, meta = (AllowPrivateAccess = "true"))
+	class USkeletalMeshComponent* WeaponMesh;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Components, meta = (AllowPrivateAccess = "true"))
 	class UArrowComponent* SpawnFloorBloodArrow;
 	
 	//*****************************************************************************//
@@ -36,6 +39,9 @@ public:
 	//								PUBLIC METHODS								   // 
 	//*****************************************************************************//
 
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE bool GetIsDeath() const { return bIsDeath; };
+	
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE bool GetWillPatrol() const { return bWillPatrol; };
 
@@ -76,8 +82,14 @@ protected:
 	FName HeadBoneName;
 
 	UPROPERTY(EditDefaultsOnly, Category = Components)
-	UHealthComponent* HealthComponent;
-	
+	class UHealthComponent* HealthComponent;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Components)
+	class UShootComponent* ShootComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Settings)
+	EWeaponType EnemyWeaponType;
+
 	//*****************************************************************************//
 	//								PROTECTED METHODS							   // 
 	//*****************************************************************************//
@@ -96,6 +108,8 @@ private:
 	//								PRIVATE VARIABLES							   // 
 	//*****************************************************************************//
 
+	bool bIsDeath;
+	
 	UPROPERTY(EditAnywhere, Category = Settings)
 	bool bWillPatrol;
 
@@ -129,6 +143,6 @@ private:
 	//*****************************************************************************//
 	//								PRIVATE METHODS								...// 
 	//*****************************************************************************//
-
+	
 	void DeathVFX();
 };

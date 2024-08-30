@@ -19,6 +19,8 @@ ABaseInteractor::ABaseInteractor()
 	
 	BoxComponent = CreateDefaultSubobject<UBoxComponent>("Box Component");
 	BoxComponent->SetupAttachment(StaticMeshComp);
+
+	BoxComponent->SetCollisionProfileName(TEXT("Interactables"));
 	
 	BoxComponent->OnComponentBeginOverlap.AddDynamic(this, &ABaseInteractor::OnOverlapBegin);
 	BoxComponent->OnComponentEndOverlap.AddDynamic(this, &ABaseInteractor::OnOverlapEnd);
@@ -62,7 +64,9 @@ void ABaseInteractor::OnInteractionMade()
 //---------------------------------------------------------------------------------------------------------------------------------------
 void ABaseInteractor::Activate()
 {
-	InteractionWidget->AddToViewport();
+	if(InteractionWidget != nullptr)
+		InteractionWidget->AddToViewport();
+	
 	Player->SetInteractable(this);
 }
 

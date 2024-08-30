@@ -33,6 +33,8 @@ public:
 	//*****************************************************************************//
 
 	void SetShootVectors(FVector StartLocation, FVector ForwardLocation);
+	
+	UFUNCTION(BlueprintCallable)
 	void SetCurrentWeaponType(EWeaponType NewType);
 	
 	void FireWeapon();

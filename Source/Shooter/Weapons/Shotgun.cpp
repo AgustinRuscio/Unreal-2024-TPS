@@ -19,4 +19,5 @@ AShotgun::AShotgun()
 	WeaponType		 = EWeaponType::Shotgun;
 	
 	ShootComponent->SetCurrentWeaponType(WeaponType);
+	ShootComponent->SetWeaponSkeleton(SkeletalMeshComponent, GunShootAnim);
 }

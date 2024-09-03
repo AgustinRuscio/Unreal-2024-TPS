@@ -5,10 +5,14 @@
 
 #include "TPS_PlayerCharacter.h"
 
+#include "TPS_PlayerController.h"
 #include "Blueprint/UserWidget.h"
 #include "Camera/CameraComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "Engine/DecalActor.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Shooter/Interactables/BaseInteractor.h"
 #include "Shooter/Weapons/Pistol.h"
 #include "Shooter/Widgets/CrosshairHUD.h"
@@ -16,7 +20,9 @@
 #include "Shooter/EnvironmentActors/BaseCoverObject.h"
 
 static float CurrentSpringArmLength;
+static float CurrentShootImpulse;
 static FVector CurrentSpringArmSocketOffset;
+static FName CurrentHitBoneName;
 
 //---------------------------------------------------------------------------------------------------------------------------------------
 ATPS_PlayerCharacter::ATPS_PlayerCharacter()
@@ -32,7 +38,10 @@ ATPS_PlayerCharacter::ATPS_PlayerCharacter()
 	
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->MaxWalkSpeed			  = 250.0f;
-
+	
+	SpawnFloorBloodArrow = CreateDefaultSubobject<UArrowComponent>("Arrow Component");
+	SpawnFloorBloodArrow->SetupAttachment(GetMesh());
+	
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>("CameraComp");
 	CameraComponent->SetupAttachment(SpringArmComp);
 	GetMesh()->bReceivesDecals = false;
@@ -54,17 +63,26 @@ FName ATPS_PlayerCharacter::GetHeadBone() const
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
-void ATPS_PlayerCharacter::OnHit(float DamageTaken, float ShooImpulse, FName& BoneHitted)
+void ATPS_PlayerCharacter::OnHit(float DamageTaken, float ShooImpulse, FName& BoneHit)
 {
 	HealthComponent->TakeDamage(DamageTaken);
+	CurrentShootImpulse   = ShooImpulse;
+	CurrentHitBoneName	  = BoneHit;
+
+	UpdateLifeBar();
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerCharacter::OnActorDestroyed()
 {
-	//Morir
+	DeathVFX();
+
+	TimeLineSpringArmMoving.PlayFromStart();
+	
 	bCanMove = false;
 	bCanShoot = false;
+	
+	ShowDeathWidget();
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -260,28 +278,28 @@ void ATPS_PlayerCharacter::ReloadWeapon()
 //---------------------------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerCharacter::Interaction()
 {
-	if(CurrentInteractor == nullptr) return;
+	if(CurrentInteractable == nullptr) return;
 	
-	CurrentInteractor->OnInteraction();
+	CurrentInteractable->OnInteraction();
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerCharacter::SetInteractable(ABaseInteractor* NewInteractable)
 {
-	if(CurrentInteractor != nullptr && CurrentInteractor != NewInteractable)
+	if(CurrentInteractable != nullptr && CurrentInteractable != NewInteractable)
 	{
-		CurrentInteractor->RemoveFromCurrent();
-		CurrentInteractor = nullptr;
+		CurrentInteractable->RemoveFromCurrent();
+		CurrentInteractable = nullptr;
 	}
 	
-	CurrentInteractor = NewInteractable;
+	CurrentInteractable = NewInteractable;
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerCharacter::RemoveInteractable()
 {
-	if(CurrentInteractor != nullptr)
-		CurrentInteractor = nullptr;
+	if(CurrentInteractable != nullptr)
+		CurrentInteractable = nullptr;
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -403,6 +421,8 @@ void ATPS_PlayerCharacter::BeginPlay()
 	
 	BindTimeLines();
 	CreateWeapons();
+	
+	UpdateLifeBar();
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -412,12 +432,18 @@ void ATPS_PlayerCharacter::BeginDestroy()
 
 	if(GetWorld())
 	{
-		GetWorld()->GetTimerManager().ClearTimer(AnimTimerHandle);
+		GetWorld()->GetTimerManager().ClearTimer(AimingTimerHandle);
+		GetWorld()->GetTimerManager().ClearTimer(DeathTimerHandle);
 	}
 
-	if(Del.IsBound())
+	if(AimingTimerDelegate.IsBound())
 	{
-		Del.Unbind();
+		AimingTimerDelegate.Unbind();
+	}
+	
+	if(DeathTimerDelegate.IsBound())
+	{
+		DeathTimerDelegate.Unbind();
 	}
 }
 
@@ -476,9 +502,9 @@ void ATPS_PlayerCharacter::EquipWeapon()
 	bCanShoot   = false;
 	bCanUnEquip = false;
 
-	if(!GetWorldTimerManager().IsTimerActive(AnimTimerHandle))
+	if(!GetWorldTimerManager().IsTimerActive(AimingTimerHandle))
 	{
-		Del.BindLambda([&]
+		AimingTimerDelegate.BindLambda([&]
 		{
 			if(bIsAiming)
 				PlayAnimMontage(CurrentWeapon->GetAimAnimMontage());
@@ -487,7 +513,7 @@ void ATPS_PlayerCharacter::EquipWeapon()
 			bCanUnEquip = true;
 		});
 			
-		GetWorldTimerManager().SetTimer(AnimTimerHandle,Del , t,false);
+		GetWorldTimerManager().SetTimer(AimingTimerHandle,AimingTimerDelegate , t,false);
 	}
 }
 
@@ -514,6 +540,50 @@ void ATPS_PlayerCharacter::LeftCurrentCover()
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerCharacter::UpdateLifeBar()
+{
+	auto controller = CastChecked<ATPS_PlayerController>(Controller);
+	controller->UpdateHealthBar(HealthComponent->GetHealthPercent());
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerCharacter::ShowDeathWidget()
+{
+	DeathTimerDelegate.BindLambda([&]
+	{
+		auto controller = CastChecked<ATPS_PlayerController>( GetController());
+		
+		controller->OnPlayerDeath();
+	});
+
+	if(!GetWorld()->GetTimerManager().IsTimerActive(DeathTimerHandle))
+		GetWorld()->GetTimerManager().SetTimer(DeathTimerHandle, DeathTimerDelegate, 3.f, false);
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerCharacter::DeathVFX() const
+{
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	GetMesh()->SetSimulatePhysics(true);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+	
+	GetMesh()->AddImpulse((GetActorForwardVector() * -1) * CurrentShootImpulse, CurrentHitBoneName, false);
+
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), DeathSound, GetActorLocation(), GetActorRotation());
+	
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	SpawnParams.bNoFail = true;
+
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BloodVFX, GetActorLocation(), FRotator::ZeroRotator,
+						FVector(1.f), true, EPSCPoolMethod::AutoRelease, true);
+
+	GetWorld()->SpawnActor<ADecalActor>(BloodFloor, SpawnFloorBloodArrow->GetComponentLocation(),
+										SpawnFloorBloodArrow->GetComponentRotation(), SpawnParams);
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerCharacter::OnReloadWeapon()
 {
 	auto t = PlayAnimMontage(CurrentWeapon->GetReloadAnimMontage());
@@ -521,9 +591,9 @@ void ATPS_PlayerCharacter::OnReloadWeapon()
 	bCanShoot   = false;
 	bCanUnEquip = false;
 
-	if(!GetWorldTimerManager().IsTimerActive(AnimTimerHandle))
+	if(!GetWorldTimerManager().IsTimerActive(AimingTimerHandle))
 	{
-		Del.BindLambda([&]
+		AimingTimerDelegate.BindLambda([&]
 		{
 			if(bIsAiming)
 				PlayAnimMontage(CurrentWeapon->GetAimAnimMontage());
@@ -532,7 +602,7 @@ void ATPS_PlayerCharacter::OnReloadWeapon()
 			bCanUnEquip = true;
 		});
 			
-		GetWorldTimerManager().SetTimer(AnimTimerHandle,Del , t,false);
+		GetWorldTimerManager().SetTimer(AimingTimerHandle,AimingTimerDelegate , t,false);
 	}
 }
 

@@ -46,7 +46,7 @@ public:
 	
 	FORCEINLINE UAnimMontage* GetAimAnimMontage() const { return AimAnimMontage; };
 	FORCEINLINE UAnimMontage* GetReloadAnimMontage() const { return ReloadAnimMontage; };
-	FORCEINLINE UAnimMontage* GetEquipAnimMontage() const { return EquipdAnimMontage; };
+	FORCEINLINE UAnimMontage* GetEquipAnimMontage() const { return EquipAnimMontage; };
 	FORCEINLINE EWeaponType GetWeaponType() const { return WeaponType; };
 
 
@@ -120,14 +120,13 @@ protected:
 	UAnimMontage* ReloadAnimMontage;
 	
 	UPROPERTY(EditDefaultsOnly, Category = VFX)
-	UAnimMontage* EquipdAnimMontage;
+	UAnimMontage* EquipAnimMontage;
 	
 	UPROPERTY(EditDefaultsOnly, Category = VFX)
 	UAnimSequence* GunShootAnim;
 	
 	UPROPERTY(EditDefaultsOnly, Category = VFX)
 	UAnimSequence* ReloadAnim;
-	
 	
 	//*****************************************************************************//
 	//								PROTECTED METHODS							   // 

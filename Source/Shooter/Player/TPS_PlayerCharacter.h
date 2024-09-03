@@ -38,11 +38,14 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* SpringArmComp;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Components, meta = (AllowPrivateAccess = "true"))
+	class UArrowComponent* SpawnFloorBloodArrow;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* CameraComponent;
-	
-	UPROPERTY(EditDefaultsOnly, Category = "VFX")
-	TSubclassOf<class UCameraShakeBase> CameraShakeHit;
+
+	UPROPERTY(EditDefaultsOnly, Category = Components)
+	UHealthComponent* HealthComponent;
 	
 	//*****************************************************************************//
 	//								PUBLIC VARIABLES							   // 
@@ -51,10 +54,10 @@ public:
 	//*****************************************************************************//
 	//								PUBLIC METHODS								   // 
 	//*****************************************************************************//
-
+	
 	virtual FName GetHeadBone() const override;
 	
-	virtual void OnHit(float DamageTaken, float ShooImpulse, FName& BoneHitted) override;
+	virtual void OnHit(float DamageTaken, float ShooImpulse, FName& BoneHit) override;
 
 	UFUNCTION()
 	void OnActorDestroyed() override;
@@ -134,6 +137,8 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = Settings)
 	FName HeadBoneName;
 	
+	EPlayerStateAction CurrentState;
+	
 	UPROPERTY(EditDefaultsOnly, Category = Weapons)
 	TSubclassOf<class ABaseWeapon> PistolBase;
 	class ABaseWeapon* Pistol;
@@ -153,47 +158,63 @@ private:
 	TSubclassOf<class UCrosshairHUD> CrosshairWidget;
 	UCrosshairHUD* CrosshairHUD;
 	
-	EPlayerStateAction CurrentState;
+	UPROPERTY(EditDefaultsOnly, Category = VFX)
+	UCurveFloat* FloatCurveSpringArmLength;
 
-	FTimerHandle AnimTimerHandle;
-	FTimerDelegate Del;
+	class ABaseInteractor* CurrentInteractable;
+	class ABaseCoverObject* CurrentCoverObject;
+
+	UPROPERTY(EditDefaultsOnly, Category = VFX)
+	TSubclassOf<class UCameraShakeBase> CameraShakeHit;
+
+	UPROPERTY(EditDefaultsOnly, Category = SFX)
+	USoundBase* DeathSound;
+	
+	UPROPERTY(EditDefaultsOnly, Category = VFX)
+	UParticleSystem* BloodVFX;
+	
+	UPROPERTY(EditDefaultsOnly, Category = VFX)
+	TSubclassOf<class ADecalActor> BloodFloor;
+	
+	FTimerHandle AimingTimerHandle;
+	FTimerDelegate AimingTimerDelegate;
+
+	FTimerHandle DeathTimerHandle;
+	FTimerDelegate DeathTimerDelegate;
 	
 	FTimeline TimeLineSpringArmMoving;
 	FTimeline TimeLineSpringArmAiming;
 	
-	UPROPERTY(EditDefaultsOnly, Category = VFX)
-	UCurveFloat* FloatCurveSpringArmLength;
-
-	class ABaseInteractor* CurrentInteractor;
-	class ABaseCoverObject* CurrentCoverObject;
-
-	UPROPERTY(EditDefaultsOnly, Category = Components)
-	UHealthComponent* HealthComponent;
-	
 	//*****************************************************************************//
 	//								PRIVATE METHODS								...// 
 	//*****************************************************************************//
-	
+
 	virtual void BeginPlay() override;
 	virtual void BeginDestroy() override;
-	
+
 	virtual void Tick(float DeltaTime) override;
-	
+
 	void CreateWeapons();
 	void EquipWeapon();
 
 	void TakeCurrentCover();
 	void LeftCurrentCover();
+
+	void UpdateLifeBar();
+
+	void ShowDeathWidget();
 	
+	void DeathVFX() const;
+
 	UFUNCTION()
 	void OnReloadWeapon();
 	
 	void BindTimeLines();
 	void TimeLinesTick(float DeltaSeconds);
-	
+
 	UFUNCTION()
 	void SetSpringArmMovingSettings(float deltaSeconds) const;
-	
+
 	UFUNCTION()
 	void SetSpringArmAimingSettings(float deltaSeconds) const;
 };

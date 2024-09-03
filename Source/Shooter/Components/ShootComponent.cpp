@@ -6,12 +6,24 @@
 #include "ShootComponent.h"
 
 #include "Kismet/GameplayStatics.h"
+#include "Perception/AISense_Hearing.h"
 #include "Shooter/Interface/IDamageable.h"
 
 //---------------------------------------------------------------------------------------------------------------------------------------
 UShootComponent::UShootComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
+
+	bIsEnemy		= false;
+	AmountOfShoots	= 6;
+	ShootSpread		= 10.f;
+	FireRate		= 0.1f;
+	GunMaxDistance	= 2000.f;
+	GunBaseDamage	= 20.f;
+	GunImpulse		= 10000.f;
+	WeaponMesh		= nullptr;
+	WeaponShootAnim = nullptr;
+	CurrentType		= EWeaponType::Pistol;
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -19,6 +31,13 @@ void UShootComponent::SetShootVectors(FVector StartLocation, FVector ForwardLoca
 {
 	StartShootPoint	   = StartLocation;
 	ForwardShootVector = ForwardLocation;
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void UShootComponent::SetWeaponSkeleton(USkeletalMeshComponent* WeaponSkeletonComp, UAnimSequence* GunShootAnim)
+{
+	WeaponMesh		= WeaponSkeletonComp;
+	WeaponShootAnim = GunShootAnim;
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -33,14 +52,47 @@ void UShootComponent::FireWeapon()
 	switch (CurrentType)
 	{
 		case EWeaponType::Pistol:
-		case EWeaponType::Rifle:
 			FireSingleBullet();
+				break;
+		
+		case EWeaponType::Rifle:
+			bIsEnemy ? FireBurstBullet() : FireSingleBullet();
 				break;
 
 		case EWeaponType::Shotgun:
 			FireMultipleBullets();
-				break;
+				break;	
 	}
+
+	if(!bIsEnemy)
+		UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetOwner()->GetActorLocation(), 1, GetOwner(), 10000.f, "NONE");
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+float UShootComponent::CalculateDamage(float Distance, FName BoneHitName, IIDamageable* OtherActor)
+{
+	float damageMultiplier = 1.0f;
+	
+	if(Distance > GunMaxDistance * 0.75f)
+	{
+		damageMultiplier -= (Distance / GunMaxDistance);
+	}
+
+	if(BoneHitName == OtherActor->GetHeadBone())
+	{
+		damageMultiplier = 100.0f;
+
+		if(Distance> GunMaxDistance * 0.5f)
+		{
+			damageMultiplier -= (Distance / GunMaxDistance);
+		}
+	}
+	
+	damageMultiplier = FMath::Clamp(damageMultiplier, 0.0f, 2.0f);
+
+	float finalDamage = GunBaseDamage * damageMultiplier;
+
+	return finalDamage;
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -60,10 +112,36 @@ void UShootComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	if(bIsEnemy)
+		SetEnemyValues();
+	
 	IgnoredActors.Add(GetOwner());
-
+	
 	ObjectTypes.Add(static_cast<EObjectTypeQuery>(ECollisionChannel::ECC_Pawn));
 	ObjectTypes.Add(static_cast<EObjectTypeQuery>(ECollisionChannel::ECC_WorldDynamic));
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void UShootComponent::BeginDestroy()
+{
+	Super::BeginDestroy();
+
+	if(GetWorld())
+	{
+		GetWorld()->GetTimerManager().ClearTimer(BurstShootingTimerHandle);
+	}
+
+	if(BurstShootingTimerDelegate.IsBound())
+	{
+		BurstShootingTimerDelegate.Unbind();
+	}
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void UShootComponent::SetEnemyValues()
+{
+	StartShootPoint	   = GetOwner()->GetActorLocation();
+	ForwardShootVector = GetOwner()->GetActorForwardVector();
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -74,9 +152,49 @@ void UShootComponent::FireSingleBullet()
 	const bool bHit = UKismetSystemLibrary::SphereTraceSingleForObjects(GetWorld(), StartShootPoint, CalculateEndLocation(), 1.0f, ObjectTypes,
 		false, IgnoredActors, EDrawDebugTrace::ForDuration, OutHit, true, FColor::Red, FColor::Green, 3.0f );
 
+	ShootFeedBack();
+
 	if(!bHit) return;
 
 	CheckHit(OutHit);
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void UShootComponent::FireBurstBullet()
+{
+	int8 ShootingCounter = AmountOfShoots;
+	
+	if(GetWorld()->GetTimerManager().IsTimerActive(BurstShootingTimerHandle))
+	{
+		GetWorld()->GetTimerManager().ClearTimer(BurstShootingTimerHandle);
+	}
+	
+	BurstShootingTimerDelegate.BindLambda([=]() mutable
+	{
+		if(ShootingCounter <= 0)
+		{
+			GetWorld()->GetTimerManager().ClearTimer(BurstShootingTimerHandle);
+			return;
+		}
+
+		ShootingCounter--;
+
+		if(bIsEnemy)
+			SetEnemyValues();
+
+		FHitResult OutHit;
+
+		const bool bHit = UKismetSystemLibrary::SphereTraceSingleForObjects(GetWorld(), StartShootPoint, CalculateEndLocation(), 1.0f, ObjectTypes,
+			false, IgnoredActors, EDrawDebugTrace::ForDuration, OutHit, true, FColor::Red, FColor::Green, 3.0f );
+
+		ShootFeedBack();
+
+		if(!bHit) return;
+
+		CheckHit(OutHit);
+	});
+
+	GetWorld()->GetTimerManager().SetTimer(BurstShootingTimerHandle, BurstShootingTimerDelegate, FireRate, true);
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -97,38 +215,20 @@ void UShootComponent::FireMultipleBullets()
 
 		CheckHit(OutHit);
 	}
+
+	ShootFeedBack();
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
-void UShootComponent::CheckHit(FHitResult HitReuslt)
+void UShootComponent::CheckHit(FHitResult HitResult)
 {
-	if(IIDamageable* damageable = Cast<IIDamageable>(HitReuslt.GetActor()))
-		damageable->OnHit(CalculateDamage(HitReuslt.Distance, HitReuslt.BoneName , damageable), GunImpulse,HitReuslt.BoneName);
+	if(IIDamageable* damageable = Cast<IIDamageable>(HitResult.GetActor()))
+		damageable->OnHit(CalculateDamage(HitResult.Distance, HitResult.BoneName , damageable), GunImpulse,HitResult.BoneName);
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
-float UShootComponent::CalculateDamage(float Distance, FName BoneHittedName, IIDamageable* OtherActor)
+void UShootComponent::ShootFeedBack()
 {
-	float damageMultiplier = 1.0f;
-	
-	if(Distance > GunMaxDistance * 0.75f)
-	{
-		damageMultiplier -= (Distance / GunMaxDistance);
-	}
-
-	if(BoneHittedName == OtherActor->GetHeadBone())
-	{
-		damageMultiplier = 100.0f;
-
-		if(Distance> GunMaxDistance * 0.5f)
-		{
-			damageMultiplier -= (Distance / GunMaxDistance);
-		}
-	}
-	
-	damageMultiplier = FMath::Clamp(damageMultiplier, 0.0f, 2.0f);
-
-	float finalDamage = GunBaseDamage * damageMultiplier;
-
-	return finalDamage;
+	WeaponMesh->PlayAnimation(WeaponShootAnim, false);
+	UGameplayStatics::PlayWorldCameraShake(GetWorld(), ShootCameraShake, GetOwner()->GetActorLocation(), 5000, 0);
 }

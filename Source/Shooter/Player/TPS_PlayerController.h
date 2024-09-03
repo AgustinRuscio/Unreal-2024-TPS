@@ -33,6 +33,9 @@ public:
 	//*****************************************************************************//
 	//								PUBLIC METHODS								   // 
 	//*****************************************************************************//
+	void OnPlayerDeath();
+
+	void UpdateHealthBar(float BarValue);
 	
 protected:
 	
@@ -52,6 +55,7 @@ private:
 
 	class ATPS_PlayerCharacter* PlayerCharacterRef;
 
+#pragma region Inputs
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputMappingContext* MappingContext;
 
@@ -93,6 +97,19 @@ private:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	const class UInputAction* InputActionTTakeCover;
+#pragma endregion
+
+	UPROPERTY(EditDefaultsOnly, Category = VFX)
+	TSubclassOf<UUserWidget> DeathWidget;
+	
+	UPROPERTY(EditDefaultsOnly, Category = VFX)
+	TSubclassOf<class UPlayerHUD> PlayerHUDWidget;
+
+	class UUserWidget* DeathHUD;
+	class UPlayerHUD* PlayerHUD;
+	
+	FTimerHandle DeathTimerHandle;
+	FTimerDelegate DeathTimerDelegate;
 	
 	//*****************************************************************************//
 	//								PRIVATE METHODS								...// 
@@ -100,6 +117,8 @@ private:
 
 	virtual void BeginPlay() override;
 
+	void CreatePlayerWidgets();
+	
 	void UnbindInputs();
 	void BindRegularInputs();
 

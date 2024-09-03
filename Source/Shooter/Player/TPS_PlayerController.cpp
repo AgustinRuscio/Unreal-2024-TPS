@@ -9,9 +9,31 @@
 #include "EnhancedInputSubsystems.h"
 #include "Kismet/GameplayStatics.h"
 #include "TPS_PlayerCharacter.h"
+#include "Blueprint/UserWidget.h"
+#include "Shooter/Widgets/PlayerHUD.h"
 
 //---------------------------------------------------------------------------------------------------------------------------------------
 ATPS_PlayerController::ATPS_PlayerController() { }
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerController::OnPlayerDeath()
+{
+	if(!GetWorld()->GetTimerManager().IsTimerActive(DeathTimerHandle))
+		GetWorld()->GetTimerManager().SetTimer(DeathTimerHandle, DeathTimerDelegate, 3.f, false);
+	Pause();
+	bShowMouseCursor = true;
+	
+	DeathHUD = CreateWidget(GetWorld(), DeathWidget, "Death Widget");
+	DeathHUD->AddToViewport(0);
+	DeathHUD->SetIsFocusable(true);
+	DeathHUD->SetFocus();
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerController::UpdateHealthBar(float BarValue)
+{
+	PlayerHUD->OnLifeBarUpdate(BarValue);
+}
 
 //---------------------------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerController::BeginPlay()
@@ -21,6 +43,14 @@ void ATPS_PlayerController::BeginPlay()
 	PlayerCharacterRef = Cast<ATPS_PlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 
 	BindRegularInputs();
+
+	CreatePlayerWidgets();
+}
+
+void ATPS_PlayerController::CreatePlayerWidgets()
+{
+	PlayerHUD = CreateWidget<UPlayerHUD>(GetWorld(), PlayerHUDWidget);
+	PlayerHUD->AddToViewport(1);
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------

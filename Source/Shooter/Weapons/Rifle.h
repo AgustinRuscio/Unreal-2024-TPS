@@ -31,6 +31,4 @@ public:
 	//*****************************************************************************//
 	//								PUBLIC METHODS								   // 
 	//*****************************************************************************//
-	
-	virtual void FireWeapon (FVector StartShootPoint, FVector ForwardShootPoint);
 };

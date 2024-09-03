@@ -56,7 +56,7 @@ public:
 	
 	virtual FName GetHeadBone() const override;
 	
-	virtual void OnHit(float DamageTaken,float ShootImpulse, FName& HiitedBoneName) override;
+	virtual void OnHit(float DamageTaken,float ShootImpulse, FName& HitBoneName) override;
 
 	UFUNCTION()
 	virtual void OnActorDestroyed() override;
@@ -90,6 +90,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Settings)
 	EWeaponType EnemyWeaponType;
 
+	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite, Category = VFX)
+	UAnimSequence* GunShootAnim;
+	
+	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite, Category = VFX)
+	UAnimMontage* SkeletonShootAnim;
+	
 	//*****************************************************************************//
 	//								PROTECTED METHODS							   // 
 	//*****************************************************************************//
@@ -120,10 +126,6 @@ private:
 	
 	UPROPERTY(EditAnywhere, Category = Settings)
 	float ShootDamage;
-	
-	float DeathImpulse;
-	
-	FName HittedBoneName;
 
 	UPROPERTY(EditAnywhere, Category = Patrol)
 	TArray<class ATargetPoint*> PatrolPoints;
@@ -131,7 +133,7 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = SFX)
 	USoundBase* DeathSound;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "VFX")
+	UPROPERTY(EditDefaultsOnly, Category = VFX)
 	UParticleSystem* BloodVFX;
 	
 	UPROPERTY(EditDefaultsOnly, Category = VFX)
@@ -139,10 +141,13 @@ private:
 
 	class UBlackboardComponent* BlackBoard;
 	
+	UPROPERTY(EditDefaultsOnly, Category = Drop)
+	TArray<TSubclassOf<class APickupWeapon>> PossibleDrops;
 	
 	//*****************************************************************************//
 	//								PRIVATE METHODS								...// 
 	//*****************************************************************************//
-	
-	void DeathVFX();
+
+	void DropItem();
+	void DeathVFX() const;
 };

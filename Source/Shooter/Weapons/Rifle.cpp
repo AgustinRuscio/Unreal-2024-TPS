@@ -15,9 +15,5 @@ ARifle::ARifle()
 	MaxAmmoInCharger = 30;
 	FireRate		 = 0.1f;
 	WeaponType		 = EWeaponType::Rifle;
-}
-
-void ARifle::FireWeapon (FVector StartShootPoint, FVector ForwardShootPoint)
-{
-	Super::FireWeapon(StartShootPoint, ForwardShootPoint);
+	
 }

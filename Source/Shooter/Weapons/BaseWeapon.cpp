@@ -66,10 +66,10 @@ void ABaseWeapon::FireWeapon(FVector StartShootPoint, FVector ForwardShootPoint)
 
 	WeaponHUD->UpdateAmmo(this);
 	
-	SkeletalMeshComponent->PlayAnimation(GunShootAnim, false);
+	//SkeletalMeshComponent->PlayAnimation(GunShootAnim, false);
 	
-	UGameplayStatics::PlayWorldCameraShake(GetWorld(), ShootCameraShake, GetActorLocation(), 5000, 0);
-	UGameplayStatics::PlaySound2D(GetWorld(), ShootSound);
+	//UGameplayStatics::PlayWorldCameraShake(GetWorld(), ShootCameraShake, GetActorLocation(), 5000, 0);
+	//UGameplayStatics::PlaySound2D(GetWorld(), ShootSound);
 	
 	ShootComponent->FireWeapon();
 }
@@ -192,6 +192,8 @@ bool ABaseWeapon::BulletsCheck()
 void ABaseWeapon::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	ShootComponent->SetWeaponSkeleton(SkeletalMeshComponent, GunShootAnim);
 	
 	CurrentAmmo = FMath::RandRange(MaxAmmoInCharger / 2, MaxAmmoInCharger);
 	AmmoStorage = FMath::RandRange(MaxAmmoToSave / 5, MaxAmmoToSave / 2);

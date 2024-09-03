@@ -35,6 +35,7 @@ public:
 
 	FORCEINLINE float GetCurrentHealth() const { return CurrentHealth; };
 	FORCEINLINE float GetMaxHealth() const { return MaxHealth; };
+	FORCEINLINE float GetHealthPercent() const { return (CurrentHealth / MaxHealth); };
 	
 	void TakeDamage(float Damage);
 

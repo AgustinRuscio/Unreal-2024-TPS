@@ -14,16 +14,17 @@
 #include "Shooter/Components/HealthComponent.h"
 #include "Shooter/Components/ShootComponent.h"
 #include "Shooter/EnemyAIController.h"
+#include "Shooter/Interactables/PickupWeapon.h"
+
+static float CurrentDeathImpulse;
+static  FName CurrentBoneHit;
 
 //---------------------------------------------------------------------------------------------------------------------------------------
 ABaseEnemy::ABaseEnemy()
 {
 	PrimaryActorTick.bCanEverTick = true;
-
-	HittedBoneName			   = "NONE";
-	DeathImpulse			   = 1000.f;
-	GetMesh()->bReceivesDecals = false;
-	bIsDeath				   = false;
+	GetMesh()->bReceivesDecals	  = false;
+	bIsDeath					  = false;
 
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>("Weapon Mesh");
 	WeaponMesh->SetupAttachment(GetMesh(), "GunSocket");
@@ -37,6 +38,7 @@ ABaseEnemy::ABaseEnemy()
 	ShootComponent = CreateDefaultSubobject<UShootComponent>("Shoot Component");
 }
 
+//---------------------------------------------------------------------------------------------------------------------------------------
 ATargetPoint* ABaseEnemy::GetCurrentPatrolPoint() const
 {
 	return PatrolPoints[PatrolIndex];
@@ -46,11 +48,11 @@ ATargetPoint* ABaseEnemy::GetCurrentPatrolPoint() const
 FName ABaseEnemy::GetHeadBone() const { return HeadBoneName; }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
-void ABaseEnemy::OnHit(float DamageTaken,float ShootImpulse, FName& HiitedBoneName)
+void ABaseEnemy::OnHit(float DamageTaken,float ShootImpulse, FName& HitBoneName)
 {
 	HealthComponent->TakeDamage(DamageTaken);
-	HittedBoneName = HiitedBoneName;
-	DeathImpulse = ShootImpulse;
+	CurrentDeathImpulse = ShootImpulse;
+	CurrentBoneHit = HitBoneName;
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -61,11 +63,8 @@ void ABaseEnemy::OnActorDestroyed()
 	
 	HealthComponent->DestroyComponent();
 
-	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
-	GetMesh()->SetSimulatePhysics(true);
-	GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
-
+	DropItem();
+	
 	DeathVFX();
 }
 
@@ -82,6 +81,8 @@ void ABaseEnemy::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	ShootComponent->SetWeaponSkeleton(WeaponMesh, GunShootAnim);
+	
 	auto AIController = CastChecked<AEnemyAIController>(GetController());
 	BlackBoard = AIController->GetBlackboardComponent();
 
@@ -92,8 +93,9 @@ void ABaseEnemy::BeginPlay()
 void ABaseEnemy::ShootStart()
 {
 	if(bIsDeath) return;
+
+	PlayAnimMontage(SkeletonShootAnim);
 	
-	ShootComponent->SetShootVectors(GetActorLocation(), GetActorForwardVector());
 	ShootComponent->FireWeapon();
 }
 
@@ -109,11 +111,28 @@ void ABaseEnemy::ChangeToNextWaypoint()
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
-void ABaseEnemy::DeathVFX()
+void ABaseEnemy::DropItem()
 {
+	int8 Randomizer = FMath::RandRange(0, PossibleDrops.Num()-1);
+
+	GetWorld()->SpawnActor<APickupWeapon>(PossibleDrops[Randomizer], SpawnFloorBloodArrow->GetComponentLocation(),
+											SpawnFloorBloodArrow->GetComponentRotation());
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ABaseEnemy::DeathVFX() const
+{
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	GetMesh()->SetSimulatePhysics(true);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+	
 	const auto& PlayerReference = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
 	const FVector& DeathImpulseDir = UKismetMathLibrary::Normal(PlayerReference->GetActorForwardVector());
-	GetMesh()->AddImpulse(DeathImpulseDir * DeathImpulse, HittedBoneName, false);
+
+	WeaponMesh->DestroyComponent();
+	
+	GetMesh()->AddImpulse(DeathImpulseDir * CurrentDeathImpulse, CurrentBoneHit, false);
 
 	UGameplayStatics::PlaySoundAtLocation(GetWorld(), DeathSound, GetActorLocation(), GetActorRotation());
 	

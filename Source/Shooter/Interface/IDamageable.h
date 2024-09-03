@@ -22,6 +22,6 @@ class SHOOTER_API IIDamageable
 public:
 	virtual FName GetHeadBone() const = 0;
 	
-	virtual void OnHit(float DamageTaken,float ShootImpulse,FName& BoneHitted) = 0;
+	virtual void OnHit(float DamageTaken,float ShootImpulse,FName& BoneHit) = 0;
 	virtual void OnActorDestroyed() = 0;
 };

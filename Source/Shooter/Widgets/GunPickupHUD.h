@@ -29,6 +29,8 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void SetWeaponType(EWeaponType OwnerType);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void UpdateWeaponImage();
 protected:
 	
 	//*****************************************************************************//

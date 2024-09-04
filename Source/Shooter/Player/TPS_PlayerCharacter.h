@@ -77,6 +77,14 @@ public:
 	
 	void ShootStart();
 	void ShootEnd();
+	
+	void MeleeAttack();
+	
+	UFUNCTION(BlueprintCallable)
+	void MeleeAttackStart();
+	
+	UFUNCTION(BlueprintCallable)
+	void MeleeAttackEnd();
 
 	void ReloadWeapon();
 	
@@ -125,6 +133,7 @@ private:
 	bool bCanMoveCamera;
 	bool bIsMoving;
 	bool bIsSprinting;
+	bool bIsAttacking;
 
 	bool bCanShoot = true;
 	bool bCanUnEquip = true;
@@ -135,9 +144,15 @@ private:
 	int CurrentWeaponIndex = 0;
 
 	UPROPERTY(EditDefaultsOnly, Category = Settings)
+	float MeleeAttackDamage;
+
+	UPROPERTY(EditDefaultsOnly, Category = Settings)
 	FName HeadBoneName;
 	
 	EPlayerStateAction CurrentState;
+
+	UPROPERTY(EditDefaultsOnly, Category = VFX)
+	UAnimMontage* MeleeAttackAnimMontage;
 	
 	UPROPERTY(EditDefaultsOnly, Category = Weapons)
 	TSubclassOf<class ABaseWeapon> PistolBase;
@@ -203,6 +218,8 @@ private:
 	void UpdateLifeBar();
 
 	void ShowDeathWidget();
+
+	void HitFeedBack() const;
 	
 	void DeathVFX() const;
 

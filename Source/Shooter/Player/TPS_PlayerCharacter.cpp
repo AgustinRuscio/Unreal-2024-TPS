@@ -21,6 +21,7 @@
 
 static float CurrentSpringArmLength;
 static float CurrentShootImpulse;
+static float MeleeAttackDistance = 100.f;
 static FVector CurrentSpringArmSocketOffset;
 static FName CurrentHitBoneName;
 
@@ -70,6 +71,7 @@ void ATPS_PlayerCharacter::OnHit(float DamageTaken, float ShooImpulse, FName& Bo
 	CurrentHitBoneName	  = BoneHit;
 
 	UpdateLifeBar();
+	HitFeedBack();
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -265,6 +267,70 @@ void ATPS_PlayerCharacter::ShootEnd()
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerCharacter::MeleeAttack()
+{
+	if(bIsAttacking) return;
+	
+	PlayAnimMontage(MeleeAttackAnimMontage);
+	bCanShoot	 = false;
+	bCanAim		 = false;
+	bIsAttacking = true;
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerCharacter::MeleeAttackStart()
+{
+	TArray<FHitResult> HitResults;
+
+	const FVector& StartBox = GetActorLocation();
+	const FVector& EndBox   = StartBox + (GetActorForwardVector() * MeleeAttackDistance);
+	const FVector& BoxSize  = FVector(20.0f, 50.0f, 50.0f);
+
+	TArray<AActor*> IgnoreTheseActors;
+	IgnoreTheseActors.Add(this);
+
+	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
+	ObjectTypes.Add(static_cast<EObjectTypeQuery>(ECollisionChannel::ECC_Pawn));
+
+	const bool bBoxHits = UKismetSystemLibrary::BoxTraceMultiForObjects(GetWorld(), StartBox, EndBox, BoxSize,
+	GetActorRotation(), ObjectTypes, true, IgnoreTheseActors, EDrawDebugTrace::ForDuration, HitResults, true, 
+	FColor::Red, FColor::Green, 3.0f);
+
+	if (bBoxHits)
+	{
+		bool bHitAnEnemy = false;
+
+		TArray<IIDamageable*> HitEnemies;
+		
+		for (const auto& CurrentHit : HitResults)
+		{
+			if (IIDamageable* TempEnemy = Cast<IIDamageable>(CurrentHit.GetActor()))
+			{
+				if(HitEnemies.Contains(TempEnemy)) continue;
+				
+				FName a = "NONE";
+				HitEnemies.Add(TempEnemy);
+				TempEnemy->OnHit(MeleeAttackDamage, 10000.f,a);
+				bHitAnEnemy = true;
+			}
+		}
+
+		if (bHitAnEnemy)
+		{
+			HitFeedBack();
+		}
+	}
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerCharacter::MeleeAttackEnd()
+{
+	bCanShoot	 = true;
+	bCanAim		 = true;
+	bIsAttacking = false;
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerCharacter::ReloadWeapon()
 {
 	if(CurrentWeapon == nullptr) return;
@@ -432,8 +498,11 @@ void ATPS_PlayerCharacter::BeginDestroy()
 
 	if(GetWorld())
 	{
-		GetWorld()->GetTimerManager().ClearTimer(AimingTimerHandle);
-		GetWorld()->GetTimerManager().ClearTimer(DeathTimerHandle);
+		if(GetWorld()->GetTimerManager().IsTimerActive(AimingTimerHandle))
+			GetWorld()->GetTimerManager().ClearTimer(AimingTimerHandle);
+		
+		if(GetWorld()->GetTimerManager().IsTimerActive(DeathTimerHandle))
+			GetWorld()->GetTimerManager().ClearTimer(DeathTimerHandle);
 	}
 
 	if(AimingTimerDelegate.IsBound())
@@ -560,6 +629,14 @@ void ATPS_PlayerCharacter::ShowDeathWidget()
 		GetWorld()->GetTimerManager().SetTimer(DeathTimerHandle, DeathTimerDelegate, 3.f, false);
 }
 
+void ATPS_PlayerCharacter::HitFeedBack() const
+{
+	UGameplayStatics::PlayWorldCameraShake(GetWorld(), CameraShakeHit, GetOwner()->GetActorLocation(), 5000, 0);
+
+	auto controller = Cast<ATPS_PlayerController>(GetController());
+	controller->PlayRumbleFeedBack(.85, .2, true, true, true, true);
+}
+
 //---------------------------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerCharacter::DeathVFX() const
 {
@@ -609,6 +686,7 @@ void ATPS_PlayerCharacter::OnReloadWeapon()
 //---------------------------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerCharacter::BindTimeLines()
 {
+	
 	//--- Spring Arm Length Moving
 	FOnTimelineFloat SpringArmTargetArmLengthMovingChangedTick;
 	SpringArmTargetArmLengthMovingChangedTick.BindUFunction(this, FName("SetSpringArmMovingSettings"));

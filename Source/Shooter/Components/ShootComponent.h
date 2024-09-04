@@ -104,6 +104,9 @@ private:
 	void FireSingleBullet();
 
 	void FireBurstBullet();
+	
+	UFUNCTION()
+	void ShootBurst();
 
 	void FireMultipleBullets();
 

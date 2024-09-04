@@ -8,6 +8,9 @@
 #include "Kismet/GameplayStatics.h"
 #include "Perception/AISense_Hearing.h"
 #include "Shooter/Interface/IDamageable.h"
+#include "Shooter/Player/TPS_PlayerController.h"
+
+static int8 ShootingCounter;
 
 //---------------------------------------------------------------------------------------------------------------------------------------
 UShootComponent::UShootComponent()
@@ -128,7 +131,8 @@ void UShootComponent::BeginDestroy()
 
 	if(GetWorld())
 	{
-		GetWorld()->GetTimerManager().ClearTimer(BurstShootingTimerHandle);
+		if(GetWorld()->GetTimerManager().IsTimerActive(BurstShootingTimerHandle))
+			GetWorld()->GetTimerManager().ClearTimer(BurstShootingTimerHandle);
 	}
 
 	if(BurstShootingTimerDelegate.IsBound())
@@ -162,39 +166,40 @@ void UShootComponent::FireSingleBullet()
 //---------------------------------------------------------------------------------------------------------------------------------------
 void UShootComponent::FireBurstBullet()
 {
-	int8 ShootingCounter = AmountOfShoots;
+	ShootingCounter = AmountOfShoots;
 	
 	if(GetWorld()->GetTimerManager().IsTimerActive(BurstShootingTimerHandle))
 	{
 		GetWorld()->GetTimerManager().ClearTimer(BurstShootingTimerHandle);
 	}
 	
-	BurstShootingTimerDelegate.BindLambda([=]() mutable
+	GetWorld()->GetTimerManager().SetTimer(BurstShootingTimerHandle, this, &UShootComponent::ShootBurst, FireRate, true);
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void UShootComponent::ShootBurst()
+{
+	if(ShootingCounter <= 0)
 	{
-		if(ShootingCounter <= 0)
-		{
-			GetWorld()->GetTimerManager().ClearTimer(BurstShootingTimerHandle);
-			return;
-		}
+		GetWorld()->GetTimerManager().ClearTimer(BurstShootingTimerHandle);
+		return;
+	}
 
-		ShootingCounter--;
+	ShootingCounter--;
 
-		if(bIsEnemy)
-			SetEnemyValues();
+	if(bIsEnemy)
+		SetEnemyValues();
 
-		FHitResult OutHit;
+	FHitResult OutHit;
 
-		const bool bHit = UKismetSystemLibrary::SphereTraceSingleForObjects(GetWorld(), StartShootPoint, CalculateEndLocation(), 1.0f, ObjectTypes,
-			false, IgnoredActors, EDrawDebugTrace::ForDuration, OutHit, true, FColor::Red, FColor::Green, 3.0f );
+	const bool bHit = UKismetSystemLibrary::SphereTraceSingleForObjects(GetWorld(), StartShootPoint, CalculateEndLocation(), 1.0f, ObjectTypes,
+		false, IgnoredActors, EDrawDebugTrace::ForDuration, OutHit, true, FColor::Red, FColor::Green, 3.0f );
 
-		ShootFeedBack();
+	ShootFeedBack();
 
-		if(!bHit) return;
+	if(!bHit) return;
 
-		CheckHit(OutHit);
-	});
-
-	GetWorld()->GetTimerManager().SetTimer(BurstShootingTimerHandle, BurstShootingTimerDelegate, FireRate, true);
+	CheckHit(OutHit);
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -231,4 +236,7 @@ void UShootComponent::ShootFeedBack()
 {
 	WeaponMesh->PlayAnimation(WeaponShootAnim, false);
 	UGameplayStatics::PlayWorldCameraShake(GetWorld(), ShootCameraShake, GetOwner()->GetActorLocation(), 5000, 0);
+
+	auto controller = Cast<ATPS_PlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	controller->PlayRumbleFeedBack(.85, .2, true, true, true, true);
 }

@@ -35,6 +35,13 @@ void ATPS_PlayerController::UpdateHealthBar(float BarValue)
 	PlayerHUD->OnLifeBarUpdate(BarValue);
 }
 
+//----------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerController::PlayRumbleFeedBack(float intensity, float duration, bool LLarge, bool LSmall, bool RLarge,
+	bool RSmall)
+{
+	PlayDynamicForceFeedback(intensity, duration, LLarge, LSmall, RLarge, RSmall,  EDynamicForceFeedbackAction::Start);
+}
+
 //---------------------------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerController::BeginPlay()
 {
@@ -181,6 +188,7 @@ void ATPS_PlayerController::Reload(const FInputActionValue& value)
 //---------------------------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerController::MeleeAttackStart(const FInputActionValue& value)
 {
+	PlayerCharacterRef->MeleeAttack();
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------

@@ -44,6 +44,8 @@ void ABaseInteractor::BeginPlay()
 	Super::BeginPlay();
 	
 	InteractionWidget = CreateWidget(GetWorld(), InteractionUserWidget);
+	InteractionWidget->AddToViewport();
+	InteractionWidget->SetVisibility(ESlateVisibility::Hidden);
 	
 	Player = Cast<ATPS_PlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 }
@@ -64,8 +66,7 @@ void ABaseInteractor::OnInteractionMade()
 //---------------------------------------------------------------------------------------------------------------------------------------
 void ABaseInteractor::Activate()
 {
-	if(InteractionWidget != nullptr)
-		InteractionWidget->AddToViewport();
+	InteractionWidget->SetVisibility(ESlateVisibility::Visible);
 	
 	Player->SetInteractable(this);
 }
@@ -73,7 +74,8 @@ void ABaseInteractor::Activate()
 //---------------------------------------------------------------------------------------------------------------------------------------
 void ABaseInteractor::Deactivate()
 {
-	InteractionWidget->RemoveFromParent();
+	InteractionWidget->SetVisibility(ESlateVisibility::Hidden);
+	
 	Player->RemoveInteractable();
 }
 

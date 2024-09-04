@@ -66,6 +66,9 @@ protected:
 
 	virtual void OnInteractionMade() override;
 
+	virtual void Activate();
+	virtual void Deactivate();
+	
 private:
 	
 	//*****************************************************************************//
@@ -75,9 +78,6 @@ private:
 	//*****************************************************************************//
 	//								PRIVATE METHODS								...// 
 	//*****************************************************************************//
-
-	void Activate();
-	void Deactivate();
 	
 	UFUNCTION()
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,

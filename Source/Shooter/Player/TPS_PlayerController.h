@@ -37,6 +37,8 @@ public:
 
 	void UpdateHealthBar(float BarValue);
 	
+	void PlayRumbleFeedBack(float intensity, float duration, bool LLarge, bool LSmall, bool RLarge, bool RSmall);
+
 protected:
 	
 	//*****************************************************************************//

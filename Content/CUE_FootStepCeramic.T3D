@@ -1,0 +1,120 @@
+Begin Object Class=/Script/Engine.SoundCue Name="CUE_FootStepCeramic" ExportPath=/Script/Engine.SoundCue'"/Game/TheRite_Content/Sound/SoundCue/CUE_FootStepCeramic.CUE_FootStepCeramic"'
+   Begin Object Class=/Script/Engine.SoundNodeWavePlayer Name="SoundNodeWavePlayer_3" ExportPath=/Script/Engine.SoundNodeWavePlayer'"/Game/TheRite_Content/Sound/SoundCue/CUE_FootStepCeramic.CUE_FootStepCeramic:SoundNodeWavePlayer_3"'
+   End Object
+   Begin Object Class=/Script/Engine.SoundNodeWavePlayer Name="SoundNodeWavePlayer_2" ExportPath=/Script/Engine.SoundNodeWavePlayer'"/Game/TheRite_Content/Sound/SoundCue/CUE_FootStepCeramic.CUE_FootStepCeramic:SoundNodeWavePlayer_2"'
+   End Object
+   Begin Object Class=/Script/Engine.SoundNodeWavePlayer Name="SoundNodeWavePlayer_1" ExportPath=/Script/Engine.SoundNodeWavePlayer'"/Game/TheRite_Content/Sound/SoundCue/CUE_FootStepCeramic.CUE_FootStepCeramic:SoundNodeWavePlayer_1"'
+   End Object
+   Begin Object Class=/Script/Engine.SoundNodeWavePlayer Name="SoundNodeWavePlayer_0" ExportPath=/Script/Engine.SoundNodeWavePlayer'"/Game/TheRite_Content/Sound/SoundCue/CUE_FootStepCeramic.CUE_FootStepCeramic:SoundNodeWavePlayer_0"'
+   End Object
+   Begin Object Class=/Script/Engine.SoundNodeRandom Name="SoundNodeRandom_0" ExportPath=/Script/Engine.SoundNodeRandom'"/Game/TheRite_Content/Sound/SoundCue/CUE_FootStepCeramic.CUE_FootStepCeramic:SoundNodeRandom_0"'
+   End Object
+   Begin Object Class=/Script/AudioEditor.SoundCueGraph Name="SoundCueGraph_0" ExportPath=/Script/AudioEditor.SoundCueGraph'"/Game/TheRite_Content/Sound/SoundCue/CUE_FootStepCeramic.CUE_FootStepCeramic:SoundCueGraph_0"'
+      Begin Object Class=/Script/AudioEditor.SoundCueGraphNode_Root Name="SoundCueGraphNode_Root_0" ExportPath=/Script/AudioEditor.SoundCueGraphNode_Root'"/Game/TheRite_Content/Sound/SoundCue/CUE_FootStepCeramic.CUE_FootStepCeramic:SoundCueGraph_0.SoundCueGraphNode_Root_0"'
+      End Object
+      Begin Object Class=/Script/AudioEditor.SoundCueGraphNode Name="SoundCueGraphNode_4" ExportPath=/Script/AudioEditor.SoundCueGraphNode'"/Game/TheRite_Content/Sound/SoundCue/CUE_FootStepCeramic.CUE_FootStepCeramic:SoundCueGraph_0.SoundCueGraphNode_4"'
+      End Object
+      Begin Object Class=/Script/AudioEditor.SoundCueGraphNode Name="SoundCueGraphNode_3" ExportPath=/Script/AudioEditor.SoundCueGraphNode'"/Game/TheRite_Content/Sound/SoundCue/CUE_FootStepCeramic.CUE_FootStepCeramic:SoundCueGraph_0.SoundCueGraphNode_3"'
+      End Object
+      Begin Object Class=/Script/AudioEditor.SoundCueGraphNode Name="SoundCueGraphNode_2" ExportPath=/Script/AudioEditor.SoundCueGraphNode'"/Game/TheRite_Content/Sound/SoundCue/CUE_FootStepCeramic.CUE_FootStepCeramic:SoundCueGraph_0.SoundCueGraphNode_2"'
+      End Object
+      Begin Object Class=/Script/AudioEditor.SoundCueGraphNode Name="SoundCueGraphNode_1" ExportPath=/Script/AudioEditor.SoundCueGraphNode'"/Game/TheRite_Content/Sound/SoundCue/CUE_FootStepCeramic.CUE_FootStepCeramic:SoundCueGraph_0.SoundCueGraphNode_1"'
+      End Object
+      Begin Object Class=/Script/AudioEditor.SoundCueGraphNode Name="SoundCueGraphNode_0" ExportPath=/Script/AudioEditor.SoundCueGraphNode'"/Game/TheRite_Content/Sound/SoundCue/CUE_FootStepCeramic.CUE_FootStepCeramic:SoundCueGraph_0.SoundCueGraphNode_0"'
+      End Object
+   End Object
+   Begin Object Name="SoundNodeWavePlayer_3" ExportPath=/Script/Engine.SoundNodeWavePlayer'"/Game/TheRite_Content/Sound/SoundCue/CUE_FootStepCeramic.CUE_FootStepCeramic:SoundNodeWavePlayer_3"'
+      SoundWaveAssetPtr="/Game/TheRite_Content/Sound/SoundFX/FootSteps/Ceramic/SFX_FootStepCeramic4.SFX_FootStepCeramic4"
+      GraphNode=/Script/AudioEditor.SoundCueGraphNode'"CUE_FootStepCeramic:SoundCueGraph_0.SoundCueGraphNode_3"'
+   End Object
+   Begin Object Name="SoundNodeWavePlayer_2" ExportPath=/Script/Engine.SoundNodeWavePlayer'"/Game/TheRite_Content/Sound/SoundCue/CUE_FootStepCeramic.CUE_FootStepCeramic:SoundNodeWavePlayer_2"'
+      SoundWaveAssetPtr="/Game/TheRite_Content/Sound/SoundFX/FootSteps/Ceramic/SFX_FootStepCeramic3.SFX_FootStepCeramic3"
+      GraphNode=/Script/AudioEditor.SoundCueGraphNode'"CUE_FootStepCeramic:SoundCueGraph_0.SoundCueGraphNode_2"'
+   End Object
+   Begin Object Name="SoundNodeWavePlayer_1" ExportPath=/Script/Engine.SoundNodeWavePlayer'"/Game/TheRite_Content/Sound/SoundCue/CUE_FootStepCeramic.CUE_FootStepCeramic:SoundNodeWavePlayer_1"'
+      SoundWaveAssetPtr="/Game/TheRite_Content/Sound/SoundFX/FootSteps/Ceramic/SFX_FootStepCeramic2.SFX_FootStepCeramic2"
+      GraphNode=/Script/AudioEditor.SoundCueGraphNode'"CUE_FootStepCeramic:SoundCueGraph_0.SoundCueGraphNode_1"'
+   End Object
+   Begin Object Name="SoundNodeWavePlayer_0" ExportPath=/Script/Engine.SoundNodeWavePlayer'"/Game/TheRite_Content/Sound/SoundCue/CUE_FootStepCeramic.CUE_FootStepCeramic:SoundNodeWavePlayer_0"'
+      SoundWaveAssetPtr="/Game/TheRite_Content/Sound/SoundFX/FootSteps/Ceramic/SFX_FootStepCeramicStep1.SFX_FootStepCeramicStep1"
+      GraphNode=/Script/AudioEditor.SoundCueGraphNode'"CUE_FootStepCeramic:SoundCueGraph_0.SoundCueGraphNode_0"'
+   End Object
+   Begin Object Name="SoundNodeRandom_0" ExportPath=/Script/Engine.SoundNodeRandom'"/Game/TheRite_Content/Sound/SoundCue/CUE_FootStepCeramic.CUE_FootStepCeramic:SoundNodeRandom_0"'
+      Weights(0)=1.000000
+      Weights(1)=1.000000
+      Weights(2)=1.000000
+      Weights(3)=1.000000
+      ChildNodes(0)=/Script/Engine.SoundNodeWavePlayer'"CUE_FootStepCeramic:SoundNodeWavePlayer_0"'
+      ChildNodes(1)=/Script/Engine.SoundNodeWavePlayer'"CUE_FootStepCeramic:SoundNodeWavePlayer_1"'
+      ChildNodes(2)=/Script/Engine.SoundNodeWavePlayer'"CUE_FootStepCeramic:SoundNodeWavePlayer_2"'
+      ChildNodes(3)=/Script/Engine.SoundNodeWavePlayer'"CUE_FootStepCeramic:SoundNodeWavePlayer_3"'
+      GraphNode=/Script/AudioEditor.SoundCueGraphNode'"CUE_FootStepCeramic:SoundCueGraph_0.SoundCueGraphNode_4"'
+   End Object
+   Begin Object Name="SoundCueGraph_0" ExportPath=/Script/AudioEditor.SoundCueGraph'"/Game/TheRite_Content/Sound/SoundCue/CUE_FootStepCeramic.CUE_FootStepCeramic:SoundCueGraph_0"'
+      Begin Object Name="SoundCueGraphNode_Root_0" ExportPath=/Script/AudioEditor.SoundCueGraphNode_Root'"/Game/TheRite_Content/Sound/SoundCue/CUE_FootStepCeramic.CUE_FootStepCeramic:SoundCueGraph_0.SoundCueGraphNode_Root_0"'
+         NodePosX=192
+         NodePosY=-64
+         NodeGuid=30AAAFB54DDA8EC92FD4A1BC1E3140B0
+         CustomProperties Pin (PinId=F40BD9614282D5F5B7B754BE6A15B2AB,PinType.PinCategory="SoundNode",PinType.PinSubCategory="Root",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(SoundCueGraphNode_4 AD49446E4C342E59925B75A330F2EFA1,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+      End Object
+      Begin Object Name="SoundCueGraphNode_4" ExportPath=/Script/AudioEditor.SoundCueGraphNode'"/Game/TheRite_Content/Sound/SoundCue/CUE_FootStepCeramic.CUE_FootStepCeramic:SoundCueGraph_0.SoundCueGraphNode_4"'
+         SoundNode=/Script/Engine.SoundNodeRandom'"CUE_FootStepCeramic:SoundNodeRandom_0"'
+         NodePosX=-16
+         NodePosY=-16
+         NodeGuid=028DF4C8496AB8160BE3BDB42D88785C
+         CustomProperties Pin (PinId=AD49446E4C342E59925B75A330F2EFA1,PinName="Output",Direction="EGPD_Output",PinType.PinCategory="SoundNode",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(SoundCueGraphNode_Root_0 F40BD9614282D5F5B7B754BE6A15B2AB,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+         CustomProperties Pin (PinId=91D2483C4A988D12BA8EFDBE5F6D617F,PinName="Input",PinFriendlyName=NSLOCTEXT("", "7F908A90418D15C6F88FA584280A6D20", " "),PinType.PinCategory="SoundNode",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(SoundCueGraphNode_0 C2FA851C446AF7CC188AF4A8B6981E16,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+         CustomProperties Pin (PinId=9F952FD6492951E6E12452A0583ED653,PinName="Input2",PinFriendlyName=NSLOCTEXT("", "4437E00C4667C39336764CB15891785D", " "),PinType.PinCategory="SoundNode",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(SoundCueGraphNode_1 F313BF4E4AE340B0350FCAA9A4F6E5C3,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+         CustomProperties Pin (PinId=38E732C64642EA92CEF9CDA4AEE7CB91,PinName="Input3",PinFriendlyName=NSLOCTEXT("", "6F94F9614961D9D7C3C3AA9B0D96DD51", " "),PinType.PinCategory="SoundNode",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(SoundCueGraphNode_2 F5F4A0B7417CF223F4656DBDC014F59F,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+         CustomProperties Pin (PinId=F26266D34B11C7C23EEB5288D17E4067,PinName="Input4",PinFriendlyName=NSLOCTEXT("", "34FA1EBF4295BBF6079A269240691A40", " "),PinType.PinCategory="SoundNode",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(SoundCueGraphNode_3 EA481D8D4F0E2B3568C278930A1CEF3B,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+      End Object
+      Begin Object Name="SoundCueGraphNode_3" ExportPath=/Script/AudioEditor.SoundCueGraphNode'"/Game/TheRite_Content/Sound/SoundCue/CUE_FootStepCeramic.CUE_FootStepCeramic:SoundCueGraph_0.SoundCueGraphNode_3"'
+         SoundNode=/Script/Engine.SoundNodeWavePlayer'"CUE_FootStepCeramic:SoundNodeWavePlayer_3"'
+         NodePosX=-347
+         NodePosY=138
+         NodeGuid=F453F9594542739B9C8FB6A019CE3B58
+         CustomProperties Pin (PinId=EA481D8D4F0E2B3568C278930A1CEF3B,PinName="Output",Direction="EGPD_Output",PinType.PinCategory="SoundNode",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(SoundCueGraphNode_4 F26266D34B11C7C23EEB5288D17E4067,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+      End Object
+      Begin Object Name="SoundCueGraphNode_2" ExportPath=/Script/AudioEditor.SoundCueGraphNode'"/Game/TheRite_Content/Sound/SoundCue/CUE_FootStepCeramic.CUE_FootStepCeramic:SoundCueGraph_0.SoundCueGraphNode_2"'
+         SoundNode=/Script/Engine.SoundNodeWavePlayer'"CUE_FootStepCeramic:SoundNodeWavePlayer_2"'
+         NodePosX=-347
+         NodePosY=69
+         NodeGuid=C79056CE421A3BCC0A099699DB56862B
+         CustomProperties Pin (PinId=F5F4A0B7417CF223F4656DBDC014F59F,PinName="Output",Direction="EGPD_Output",PinType.PinCategory="SoundNode",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(SoundCueGraphNode_4 38E732C64642EA92CEF9CDA4AEE7CB91,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+      End Object
+      Begin Object Name="SoundCueGraphNode_1" ExportPath=/Script/AudioEditor.SoundCueGraphNode'"/Game/TheRite_Content/Sound/SoundCue/CUE_FootStepCeramic.CUE_FootStepCeramic:SoundCueGraph_0.SoundCueGraphNode_1"'
+         SoundNode=/Script/Engine.SoundNodeWavePlayer'"CUE_FootStepCeramic:SoundNodeWavePlayer_1"'
+         NodePosX=-347
+         NodePosY=-1
+         NodeGuid=A11D99954CADBCF7A13490A937CEF000
+         CustomProperties Pin (PinId=F313BF4E4AE340B0350FCAA9A4F6E5C3,PinName="Output",Direction="EGPD_Output",PinType.PinCategory="SoundNode",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(SoundCueGraphNode_4 9F952FD6492951E6E12452A0583ED653,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+      End Object
+      Begin Object Name="SoundCueGraphNode_0" ExportPath=/Script/AudioEditor.SoundCueGraphNode'"/Game/TheRite_Content/Sound/SoundCue/CUE_FootStepCeramic.CUE_FootStepCeramic:SoundCueGraph_0.SoundCueGraphNode_0"'
+         SoundNode=/Script/Engine.SoundNodeWavePlayer'"CUE_FootStepCeramic:SoundNodeWavePlayer_0"'
+         NodePosX=-384
+         NodePosY=-64
+         NodeGuid=EBED2BB9435B141B83736FB52B5627B6
+         CustomProperties Pin (PinId=C2FA851C446AF7CC188AF4A8B6981E16,PinName="Output",Direction="EGPD_Output",PinType.PinCategory="SoundNode",PinType.PinSubCategory="",PinType.PinSubCategoryObject=None,PinType.PinSubCategoryMemberReference=(),PinType.PinValueType=(),PinType.ContainerType=None,PinType.bIsReference=False,PinType.bIsConst=False,PinType.bIsWeakPointer=False,PinType.bIsUObjectWrapper=False,PinType.bSerializeAsSinglePrecisionFloat=False,LinkedTo=(SoundCueGraphNode_4 91D2483C4A988D12BA8EFDBE5F6D617F,),PersistentGuid=00000000000000000000000000000000,bHidden=False,bNotConnectable=False,bDefaultValueIsReadOnly=False,bDefaultValueIsIgnored=False,bAdvancedView=False,bOrphanedPin=False,)
+      End Object
+      Schema=/Script/CoreUObject.Class'"/Script/AudioEditor.SoundCueGraphSchema"'
+      Nodes(0)=/Script/AudioEditor.SoundCueGraphNode_Root'"SoundCueGraphNode_Root_0"'
+      Nodes(1)=/Script/AudioEditor.SoundCueGraphNode'"SoundCueGraphNode_0"'
+      Nodes(2)=/Script/AudioEditor.SoundCueGraphNode'"SoundCueGraphNode_1"'
+      Nodes(3)=/Script/AudioEditor.SoundCueGraphNode'"SoundCueGraphNode_2"'
+      Nodes(4)=/Script/AudioEditor.SoundCueGraphNode'"SoundCueGraphNode_3"'
+      Nodes(5)=/Script/AudioEditor.SoundCueGraphNode'"SoundCueGraphNode_4"'
+      bAllowDeletion=False
+      GraphGuid=16E652864D3DB5194DED0DB0019350EF
+   End Object
+   FirstNode=/Script/Engine.SoundNodeRandom'"SoundNodeRandom_0"'
+   VolumeMultiplier=0.050000
+   AllNodes(0)=/Script/Engine.SoundNodeWavePlayer'"SoundNodeWavePlayer_0"'
+   AllNodes(1)=/Script/Engine.SoundNodeWavePlayer'"SoundNodeWavePlayer_1"'
+   AllNodes(2)=/Script/Engine.SoundNodeWavePlayer'"SoundNodeWavePlayer_2"'
+   AllNodes(3)=/Script/Engine.SoundNodeWavePlayer'"SoundNodeWavePlayer_3"'
+   AllNodes(4)=/Script/Engine.SoundNodeRandom'"SoundNodeRandom_0"'
+   SoundCueGraph=/Script/AudioEditor.SoundCueGraph'"SoundCueGraph_0"'
+   SoundClassObject=/Script/Engine.SoundClass'"/Game/TheRite_Content/Sound/Settings/Fx.Fx"'
+   Duration=0.367260
+   MaxDistance=2097152.000000
+End Object

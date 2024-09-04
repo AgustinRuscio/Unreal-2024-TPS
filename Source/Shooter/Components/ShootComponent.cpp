@@ -68,7 +68,7 @@ void UShootComponent::FireWeapon()
 	}
 
 	if(!bIsEnemy)
-		UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetOwner()->GetActorLocation(), 1, GetOwner(), 10000.f, "NONE");
+			UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetOwner()->GetActorLocation(), 1, GetOwner(), 10000.f, "NONE");
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------

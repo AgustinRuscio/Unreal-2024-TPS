@@ -61,6 +61,8 @@ public:
 	UFUNCTION()
 	virtual void OnActorDestroyed() override;
 
+	void InstaKill();
+	
 	UFUNCTION(BlueprintCallable)
 	void PlayerOnSight(bool bAwareOfPlayer);
 	

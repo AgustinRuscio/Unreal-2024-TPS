@@ -36,6 +36,8 @@ public:
 	void OnPlayerDeath();
 
 	void UpdateHealthBar(float BarValue);
+
+	void ShowHideStealthKill(bool Activate);
 	
 	void PlayRumbleFeedBack(float intensity, float duration, bool LLarge, bool LSmall, bool RLarge, bool RSmall);
 

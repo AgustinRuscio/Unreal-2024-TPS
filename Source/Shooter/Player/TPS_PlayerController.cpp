@@ -36,6 +36,12 @@ void ATPS_PlayerController::UpdateHealthBar(float BarValue)
 }
 
 //----------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerController::ShowHideStealthKill(bool Activate)
+{
+	PlayerHUD->StealthKillWidget(Activate);
+}
+
+//----------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerController::PlayRumbleFeedBack(float intensity, float duration, bool LLarge, bool LSmall, bool RLarge,
 	bool RSmall)
 {

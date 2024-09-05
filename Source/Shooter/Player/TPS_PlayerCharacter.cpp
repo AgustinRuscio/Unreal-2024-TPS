@@ -17,6 +17,7 @@
 #include "Shooter/Weapons/Pistol.h"
 #include "Shooter/Widgets/CrosshairHUD.h"
 #include "Shooter/EnumContainer.h"
+#include "Shooter/Enemies/BaseEnemy.h"
 #include "Shooter/EnvironmentActors/BaseCoverObject.h"
 
 static float CurrentSpringArmLength;
@@ -24,6 +25,7 @@ static float CurrentShootImpulse;
 static float MeleeAttackDistance = 100.f;
 static FVector CurrentSpringArmSocketOffset;
 static FName CurrentHitBoneName;
+static ABaseEnemy* EnemyForInstaKill;
 
 //---------------------------------------------------------------------------------------------------------------------------------------
 ATPS_PlayerCharacter::ATPS_PlayerCharacter()
@@ -280,44 +282,51 @@ void ATPS_PlayerCharacter::MeleeAttack()
 //---------------------------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerCharacter::MeleeAttackStart()
 {
-	TArray<FHitResult> HitResults;
-
-	const FVector& StartBox = GetActorLocation();
-	const FVector& EndBox   = StartBox + (GetActorForwardVector() * MeleeAttackDistance);
-	const FVector& BoxSize  = FVector(20.0f, 50.0f, 50.0f);
-
-	TArray<AActor*> IgnoreTheseActors;
-	IgnoreTheseActors.Add(this);
-
-	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
-	ObjectTypes.Add(static_cast<EObjectTypeQuery>(ECollisionChannel::ECC_Pawn));
-
-	const bool bBoxHits = UKismetSystemLibrary::BoxTraceMultiForObjects(GetWorld(), StartBox, EndBox, BoxSize,
-	GetActorRotation(), ObjectTypes, true, IgnoreTheseActors, EDrawDebugTrace::ForDuration, HitResults, true, 
-	FColor::Red, FColor::Green, 3.0f);
-
-	if (bBoxHits)
+	if(EnemyForInstaKill != nullptr)
 	{
-		bool bHitAnEnemy = false;
+		EnemyForInstaKill->InstaKill();
+	}
+	else
+	{
+		TArray<FHitResult> HitResults;
 
-		TArray<IIDamageable*> HitEnemies;
-		
-		for (const auto& CurrentHit : HitResults)
+		const FVector& StartBox = GetActorLocation();
+		const FVector& EndBox   = StartBox + (GetActorForwardVector() * MeleeAttackDistance);
+		const FVector& BoxSize  = FVector(20.0f, 50.0f, 50.0f);
+
+		TArray<AActor*> IgnoreTheseActors;
+		IgnoreTheseActors.Add(this);
+
+		TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
+		ObjectTypes.Add(static_cast<EObjectTypeQuery>(ECollisionChannel::ECC_Pawn));
+
+		const bool bBoxHits = UKismetSystemLibrary::BoxTraceMultiForObjects(GetWorld(), StartBox, EndBox, BoxSize,
+		GetActorRotation(), ObjectTypes, true, IgnoreTheseActors, EDrawDebugTrace::ForDuration, HitResults, true, 
+		FColor::Red, FColor::Green, 3.0f);
+
+		if (bBoxHits)
 		{
-			if (IIDamageable* TempEnemy = Cast<IIDamageable>(CurrentHit.GetActor()))
+			bool bHitAnEnemy = false;
+
+			TArray<IIDamageable*> HitEnemies;
+			
+			for (const auto& CurrentHit : HitResults)
 			{
-				if(HitEnemies.Contains(TempEnemy)) continue;
-				
-				FName a = "NONE";
-				HitEnemies.Add(TempEnemy);
-				TempEnemy->OnHit(MeleeAttackDamage, 10000.f,a);
-				bHitAnEnemy = true;
+				if (IIDamageable* TempEnemy = Cast<IIDamageable>(CurrentHit.GetActor()))
+				{
+					if(HitEnemies.Contains(TempEnemy)) continue;
+					
+					FName a = "NONE";
+					HitEnemies.Add(TempEnemy);
+					TempEnemy->OnHit(MeleeAttackDamage, 10000.f,a);
+					bHitAnEnemy = true;
+				}
 			}
-		}
 
-		if (bHitAnEnemy)
-		{
-			HitFeedBack();
+			if (bHitAnEnemy)
+			{
+				HitFeedBack();
+			}
 		}
 	}
 }
@@ -481,7 +490,9 @@ void ATPS_PlayerCharacter::SetCoverObject(ABaseCoverObject* currentCover)
 void ATPS_PlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
+	controller = CastChecked<ATPS_PlayerController>(Controller);
+	
 	CrosshairHUD = CreateWidget<UCrosshairHUD>(GetWorld(), CrosshairWidget);
 	CrosshairHUD->AddToViewport();
 	
@@ -521,9 +532,53 @@ void ATPS_PlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	CheckForwardTrace();
+	
 	TimeLinesTick(DeltaTime);
 
 	HeadBob();
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerCharacter::CheckForwardTrace()
+{
+	FVector StartShootPoint = GetActorLocation();
+	FVector EndShootPoint = StartShootPoint + (GetActorRotation().Vector() * 100);
+
+	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
+	ObjectTypes.Add(static_cast<EObjectTypeQuery>(ECollisionChannel::ECC_Pawn));
+	ObjectTypes.Add(static_cast<EObjectTypeQuery>(ECollisionChannel::ECC_WorldDynamic));
+
+	TArray<AActor*> IgnoredActors;
+	IgnoredActors.Add(this);
+	
+	FHitResult OutHit;
+	
+	bool hit = UKismetSystemLibrary::SphereTraceSingleForObjects(GetWorld(), StartShootPoint, EndShootPoint, 15.0f, ObjectTypes,
+	   false, IgnoredActors, EDrawDebugTrace::ForOneFrame, OutHit, true, FColor::Red, FColor::Green, 3.0f );
+	
+	if(!hit)
+	{
+		EnemyForInstaKill = nullptr;
+		controller->ShowHideStealthKill(false);
+	}
+	else
+	{
+		if(ABaseEnemy* enemy = Cast<ABaseEnemy>(OutHit.GetActor()))
+		{
+			if(!enemy->GetIsAwareOfPlayerPresence())
+			{
+				EnemyForInstaKill = enemy;
+				controller->ShowHideStealthKill(true);
+			}
+			else
+			{
+				EnemyForInstaKill = nullptr;
+				controller->ShowHideStealthKill(false);
+			}
+		}
+	}
+
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -613,7 +668,6 @@ void ATPS_PlayerCharacter::LeftCurrentCover()
 //---------------------------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerCharacter::UpdateLifeBar()
 {
-	auto controller = CastChecked<ATPS_PlayerController>(Controller);
 	controller->UpdateHealthBar(HealthComponent->GetHealthPercent());
 }
 
@@ -622,8 +676,6 @@ void ATPS_PlayerCharacter::ShowDeathWidget()
 {
 	DeathTimerDelegate.BindLambda([&]
 	{
-		auto controller = CastChecked<ATPS_PlayerController>( GetController());
-		
 		controller->OnPlayerDeath();
 	});
 
@@ -634,7 +686,6 @@ void ATPS_PlayerCharacter::ShowDeathWidget()
 //---------------------------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerCharacter::HeadBob() const
 {
-	auto controller = Cast<ATPS_PlayerController>(GetController());
 	controller->PlayRumbleFeedBack(.85, .2, true, true, true, true);
 	
 	if(GetVelocity().Length() > 0)
@@ -653,7 +704,6 @@ void ATPS_PlayerCharacter::HitFeedBack() const
 {
 	UGameplayStatics::PlayWorldCameraShake(GetWorld(), CameraShakeHit, GetOwner()->GetActorLocation(), 5000, 0);
 
-	auto controller = Cast<ATPS_PlayerController>(GetController());
 	controller->PlayRumbleFeedBack(.85, .2, true, true, true, true);
 }
 

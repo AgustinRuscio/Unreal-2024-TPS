@@ -151,6 +151,8 @@ private:
 	
 	EPlayerStateAction CurrentState;
 
+	class ATPS_PlayerController* controller;
+	
 	UPROPERTY(EditDefaultsOnly, Category = VFX)
 	UAnimMontage* MeleeAttackAnimMontage;
 	
@@ -218,6 +220,8 @@ private:
 
 	virtual void Tick(float DeltaTime) override;
 
+	void CheckForwardTrace();
+	
 	void CreateWeapons();
 	void EquipWeapon();
 

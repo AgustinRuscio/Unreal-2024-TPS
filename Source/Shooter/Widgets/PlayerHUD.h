@@ -20,4 +20,7 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnDeath();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void StealthKillWidget(bool IsActive);
 };

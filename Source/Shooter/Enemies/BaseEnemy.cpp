@@ -69,6 +69,13 @@ void ABaseEnemy::OnActorDestroyed()
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
+void ABaseEnemy::InstaKill()
+{
+	FName name = "head";
+	OnHit(HealthComponent->GetMaxHealth(), 100.f, name);
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
 void ABaseEnemy::PlayerOnSight(bool bAwareOfPlayer)
 {
 	bIsAwareOfPlayer = bAwareOfPlayer;

@@ -190,6 +190,15 @@ private:
 	
 	UPROPERTY(EditDefaultsOnly, Category = VFX)
 	TSubclassOf<class ADecalActor> BloodFloor;
+
+	UPROPERTY(EditAnywhere, Category = "Camera Shake")
+	TSubclassOf<UCameraShakeBase> CameraShakeWalk;
+	
+	UPROPERTY(EditAnywhere, Category = "Camera Shake")
+	TSubclassOf<UCameraShakeBase> CameraShakeRun;
+	
+	UPROPERTY(EditAnywhere, Category = "Camera Shake")
+	TSubclassOf<UCameraShakeBase> CameraShakeIdle;
 	
 	FTimerHandle AimingTimerHandle;
 	FTimerDelegate AimingTimerDelegate;
@@ -218,6 +227,7 @@ private:
 	void UpdateLifeBar();
 
 	void ShowDeathWidget();
+	void HeadBob() const;
 
 	void HitFeedBack() const;
 	

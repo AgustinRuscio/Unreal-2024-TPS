@@ -41,10 +41,10 @@ ATPS_PlayerCharacter::ATPS_PlayerCharacter()
 	GetCharacterMovement()->MaxWalkSpeed			  = 250.0f;
 	
 	SpawnFloorBloodArrow = CreateDefaultSubobject<UArrowComponent>("Arrow Component");
-	SpawnFloorBloodArrow->SetupAttachment(GetMesh());
+	SpawnFloorBloodArrow->SetupAttachment(GetMesh(), "head");
 	
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>("CameraComp");
-	CameraComponent->SetupAttachment(SpringArmComp);
+	CameraComponent->SetupAttachment(SpringArmComp, "head");
 	GetMesh()->bReceivesDecals = false;
 	bUseControllerRotationYaw  = false;
 
@@ -522,6 +522,8 @@ void ATPS_PlayerCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	TimeLinesTick(DeltaTime);
+
+	HeadBob();
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -629,6 +631,24 @@ void ATPS_PlayerCharacter::ShowDeathWidget()
 		GetWorld()->GetTimerManager().SetTimer(DeathTimerHandle, DeathTimerDelegate, 3.f, false);
 }
 
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerCharacter::HeadBob() const
+{
+	auto controller = Cast<ATPS_PlayerController>(GetController());
+	controller->PlayRumbleFeedBack(.85, .2, true, true, true, true);
+	
+	if(GetVelocity().Length() > 0)
+	{
+		if(GetVelocity().Length() < 600)
+			controller->ClientStartCameraShake(CameraShakeWalk);
+		else
+			controller->ClientStartCameraShake(CameraShakeRun);
+	}
+	else
+		controller->ClientStartCameraShake(CameraShakeIdle);
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerCharacter::HitFeedBack() const
 {
 	UGameplayStatics::PlayWorldCameraShake(GetWorld(), CameraShakeHit, GetOwner()->GetActorLocation(), 5000, 0);

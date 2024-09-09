@@ -24,6 +24,7 @@ static float CurrentSpringArmLength;
 static float CurrentShootImpulse;
 static float MeleeAttackDistance = 100.f;
 static FVector CurrentSpringArmSocketOffset;
+static FVector CoverRightVector;
 static FName CurrentHitBoneName;
 static ABaseEnemy* EnemyForInstaKill;
 
@@ -102,8 +103,16 @@ void ATPS_PlayerCharacter::MovePlayer(FVector2d Direction)
 	
 	if(Direction.X != 0)
 	{
-		const FVector& CameraRight = CameraComponent->GetRightVector();
-		AddMovementInput(CameraRight, Direction.X);
+		if(bIsTakingCover)
+		{
+			const FVector& PlayerRightVector = GetActorRightVector();
+			AddMovementInput(CoverRightVector, Direction.X);
+		}
+		else
+		{
+			const FVector& CameraRight = CameraComponent->GetRightVector();
+			AddMovementInput(CameraRight, Direction.X);
+		}
 	}
 }
 
@@ -114,7 +123,7 @@ void ATPS_PlayerCharacter::MovementStart()
 
 	bIsMoving = true;
 	
-	if(!bIsAiming)
+	if(!bIsAiming && !bIsTakingCover)
 	{
 		if(TimeLineSpringArmMoving.IsPlaying())
 		{
@@ -481,12 +490,6 @@ void ATPS_PlayerCharacter::TakeCover()
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
-void ATPS_PlayerCharacter::SetCoverObject(ABaseCoverObject* currentCover)
-{
-	CurrentCoverObject = currentCover;
-}
-
-//---------------------------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -548,6 +551,7 @@ void ATPS_PlayerCharacter::CheckForwardTrace()
 	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
 	ObjectTypes.Add(static_cast<EObjectTypeQuery>(ECollisionChannel::ECC_Pawn));
 	ObjectTypes.Add(static_cast<EObjectTypeQuery>(ECollisionChannel::ECC_WorldDynamic));
+	ObjectTypes.Add(static_cast<EObjectTypeQuery>(ECollisionChannel::ECC_WorldStatic));
 
 	TArray<AActor*> IgnoredActors;
 	IgnoredActors.Add(this);
@@ -561,6 +565,9 @@ void ATPS_PlayerCharacter::CheckForwardTrace()
 	{
 		EnemyForInstaKill = nullptr;
 		controller->ShowHideStealthKill(false);
+
+		if(!bIsTakingCover)
+			CurrentCoverObject = nullptr;
 	}
 	else
 	{
@@ -577,8 +584,11 @@ void ATPS_PlayerCharacter::CheckForwardTrace()
 				controller->ShowHideStealthKill(false);
 			}
 		}
+		else if(ABaseCoverObject* cover = Cast<ABaseCoverObject>(OutHit.GetActor()))
+		{
+			CurrentCoverObject = cover;
+		}
 	}
-
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -648,21 +658,22 @@ void ATPS_PlayerCharacter::TakeCurrentCover()
 {
 	if(CurrentCoverObject == nullptr || bIsTakingCover) return;
 
-	bIsTakingCover							 = true;
-	bIsCrouching							 = CurrentCoverObject->GetCrouchCover();
-	bUseControllerRotationYaw				 = false;
-	CameraComponent->bUsePawnControlRotation = false;
-	FaceRotation(CurrentCoverObject->GetCoverRotation());
-
-	SetActorRotation(CurrentCoverObject->GetCoverRotation());
+	CurrentCoverObject->SetCoverActor(this);
+	
+	bIsTakingCover	 = true;
+	CoverRightVector = GetActorRightVector() * -1;
+	GetCharacterMovement()->bOrientRotationToMovement = false;
+	TimeLineSpringArmMoving.PlayFromStart();
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerCharacter::LeftCurrentCover()
 {
-	bUseControllerRotationYaw				 = true;
-	bIsCrouching							 = false;
+	CurrentCoverObject->LeaveCover();
+	
 	bIsTakingCover							 = false;
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	TimeLineSpringArmMoving.ReverseFromEnd();
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------

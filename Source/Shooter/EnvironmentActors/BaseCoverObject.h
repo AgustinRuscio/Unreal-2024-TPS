@@ -30,10 +30,30 @@ public:
 	UStaticMeshComponent* Cover_MeshComponent;
 
 	UPROPERTY(EditDefaultsOnly, Category = Components, meta = (AllowPrivateAccess = "true"))
-	class UBoxComponent* Cover_Enter_BoxComponent;
+	class UBoxComponent* Cover_One_BoxComponent;
+	
+	UPROPERTY(EditDefaultsOnly, Category = Components, meta = (AllowPrivateAccess = "true"))
+	class UBoxComponent* Cover_Two_BoxComponent;
+	
+	UPROPERTY(EditDefaultsOnly, Category = Components, meta = (AllowPrivateAccess = "true"))
+	class UBoxComponent* Cover_Three_BoxComponent;
+	
+	UPROPERTY(EditDefaultsOnly, Category = Components, meta = (AllowPrivateAccess = "true"))
+	class UBoxComponent* Cover_Four_BoxComponent;
 
 	UPROPERTY(EditDefaultsOnly, Category = Components, meta = (AllowPrivateAccess = "true"))
 	class UArrowComponent* ArrowComponent;
+	
+	UPROPERTY(EditDefaultsOnly, Category = Components, meta = (AllowPrivateAccess = "true"))
+	class UArrowComponent* BorderOneArrowComponent;
+	UPROPERTY(EditDefaultsOnly, Category = Components, meta = (AllowPrivateAccess = "true"))
+	class UArrowComponent* BorderTwoArrowComponent;
+	UPROPERTY(EditDefaultsOnly, Category = Components, meta = (AllowPrivateAccess = "true"))
+	class UArrowComponent* BorderThreeArrowComponent;
+	UPROPERTY(EditDefaultsOnly, Category = Components, meta = (AllowPrivateAccess = "true"))
+	class UArrowComponent* BorderFourArrowComponent;
+	
+	class UArrowComponent* CurrentCoverArrow;
 	
 	//*****************************************************************************//
 	//								PUBLIC VARIABLES							   // 
@@ -45,6 +65,9 @@ public:
 
 	FORCEINLINE bool GetCrouchCover() const { return bIsCrouchedCover; };
 	FORCEINLINE FRotator GetCoverRotation() const { return ArrowComponent->GetRelativeRotation(); };
+
+	void SetCoverActor(AActor* CoverActor);
+	void LeaveCover();
 	
 protected:
 	
@@ -67,6 +90,8 @@ private:
 	UPROPERTY(EditAnywhere, Category = Settings)
 	bool bIsCrouchedCover;
 
+	AActor* CoveringActor;
+	
 	UPROPERTY(EditDefaultsOnly, Category = VFX)
 	class UAnimMontage* CoverAnimMontage;
 	
@@ -76,6 +101,8 @@ private:
 	
 	virtual void BeginPlay() override;
 
+	void CalculateCurrentArrow();
+	
 	UFUNCTION()
 	void OnPlayerBeginOverlapEnterArea(UPrimitiveComponent* OverlappedComponent,	AActor* OtherActor,	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 

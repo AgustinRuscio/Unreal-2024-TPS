@@ -54,6 +54,8 @@ public:
 	//*****************************************************************************//
 	//								PUBLIC METHODS								   // 
 	//*****************************************************************************//
+
+	FORCEINLINE bool GetAimingState() const { return bIsAiming; };
 	
 	virtual FName GetHeadBone() const override;
 	
@@ -97,7 +99,6 @@ public:
 	void SwapWeapon(int index);
 
 	void TakeCover();
-	void SetCoverObject(class ABaseCoverObject* currentCover);
 	
 protected:
 	
@@ -115,9 +116,9 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly)
 	bool bShotgunUnlocked;
-
+	
 	UPROPERTY(BlueprintReadOnly)
-	bool bIsCrouching;
+	bool bIsTakingCover;
 	
 	//*****************************************************************************//
 	//								PROTECTED METHODS							   // 
@@ -139,7 +140,6 @@ private:
 	bool bCanUnEquip = true;
 	bool bCanAim;
 	bool bUnarmed;
-	bool bIsTakingCover;
 	
 	int CurrentWeaponIndex = 0;
 

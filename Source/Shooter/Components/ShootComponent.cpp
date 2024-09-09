@@ -122,6 +122,7 @@ void UShootComponent::BeginPlay()
 	
 	ObjectTypes.Add(static_cast<EObjectTypeQuery>(ECollisionChannel::ECC_Pawn));
 	ObjectTypes.Add(static_cast<EObjectTypeQuery>(ECollisionChannel::ECC_WorldDynamic));
+	ObjectTypes.Add(static_cast<EObjectTypeQuery>(ECollisionChannel::ECC_WorldStatic));
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------

@@ -15,6 +15,7 @@
 #include "Shooter/Components/ShootComponent.h"
 #include "Shooter/EnemyAIController.h"
 #include "Shooter/Interactables/PickupWeapon.h"
+#include "Shooter/Player/TPS_PlayerCharacter.h"
 
 static float CurrentDeathImpulse;
 static  FName CurrentBoneHit;
@@ -36,12 +37,6 @@ ABaseEnemy::ABaseEnemy()
 	HealthComponent->OnDeath.AddDynamic(this, &ABaseEnemy::OnActorDestroyed);
 
 	ShootComponent = CreateDefaultSubobject<UShootComponent>("Shoot Component");
-}
-
-//---------------------------------------------------------------------------------------------------------------------------------------
-ATargetPoint* ABaseEnemy::GetCurrentPatrolPoint() const
-{
-	return PatrolPoints[PatrolIndex];
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -76,11 +71,15 @@ void ABaseEnemy::InstaKill()
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
-void ABaseEnemy::PlayerOnSight(bool bAwareOfPlayer)
+void ABaseEnemy::WarningReceived(ATPS_PlayerCharacter* PlayerRef)
 {
-	bIsAwareOfPlayer = bAwareOfPlayer;
+	AIController->WarnReceive(PlayerRef);
+}
 
-	GetCharacterMovement()->MaxWalkSpeed = bIsAwareOfPlayer ? AwareOfPlayerSpeed : RegularSpeed;
+//---------------------------------------------------------------------------------------------------------------------------------------
+ATargetPoint* ABaseEnemy::GetCurrentPatrolPoint() const
+{
+	return PatrolPoints[PatrolIndex];
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -90,10 +89,19 @@ void ABaseEnemy::BeginPlay()
 	
 	ShootComponent->SetWeaponSkeleton(WeaponMesh, GunShootAnim);
 	
-	auto AIController = CastChecked<AEnemyAIController>(GetController());
+	AIController = CastChecked<AEnemyAIController>(GetController());
 	BlackBoard = AIController->GetBlackboardComponent();
 
 	GetCharacterMovement()->MaxWalkSpeed = RegularSpeed;
+	
+	MeleeTimer = MeleeCoolDown;
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ABaseEnemy::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+	MeleeTimer += DeltaSeconds;
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -101,9 +109,57 @@ void ABaseEnemy::ShootStart()
 {
 	if(bIsDeath) return;
 
+	if(bIsAttacking) return;
+	
 	PlayAnimMontage(SkeletonShootAnim);
 	
 	ShootComponent->FireWeapon();
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ABaseEnemy::MeleeAttack()
+{
+	if(bIsDeath) return;
+	
+	if(bIsAttacking || MeleeTimer < MeleeCoolDown) return;
+	
+	bIsAttacking = true;
+	MeleeTimer = 0;
+
+	PlayAnimMontage(SkeletonMeleeAnim);
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ABaseEnemy::MeleeAttackStart()
+{
+	FHitResult HitResults;
+
+	const FVector& StartBox = GetActorLocation();
+	const FVector& EndBox   = StartBox + (GetActorForwardVector() * MeleeAttackDistance);
+	const FVector& BoxSize  = FVector(20.0f, 50.0f, 50.0f);
+
+	TArray<AActor*> IgnoreTheseActors;
+	IgnoreTheseActors.Add(this);
+
+	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
+	ObjectTypes.Add(static_cast<EObjectTypeQuery>(ECollisionChannel::ECC_Pawn));
+
+	UKismetSystemLibrary::BoxTraceSingleForObjects(GetWorld(), StartBox, EndBox, BoxSize,
+	GetActorRotation(), ObjectTypes, true, IgnoreTheseActors, EDrawDebugTrace::ForDuration, HitResults, true, 
+	FColor::Red, FColor::Green, 3.0f);
+
+	
+		if (ATPS_PlayerCharacter* TempEnemy = Cast<ATPS_PlayerCharacter>(HitResults.GetActor()))
+		{
+			FName a = "NONE";
+			TempEnemy->OnHit(MeleeAttackDamage, 10000.f,a);
+		}
+	
+}
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ABaseEnemy::MeleeAttackEnd()
+{
+	bIsAttacking = false;
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -115,6 +171,19 @@ void ABaseEnemy::ChangeToNextWaypoint()
 	{
 		PatrolIndex = 0;
 	}
+}
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ABaseEnemy::PlayerOnSight(bool bAwareOfPlayer)
+{
+	bIsAwareOfPlayer = bAwareOfPlayer;
+
+	GetCharacterMovement()->MaxWalkSpeed = bIsAwareOfPlayer ? AwareOfPlayerSpeed : RegularSpeed;
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ABaseEnemy::WarnOtherEnemies(ATPS_PlayerCharacter* PlayerRef)
+{
+	OnPlayerDetected.Broadcast(this, PlayerRef);
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------

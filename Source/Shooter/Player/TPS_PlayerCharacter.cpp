@@ -9,6 +9,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/WidgetInteractionComponent.h"
 #include "Engine/DecalActor.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -19,6 +20,7 @@
 #include "Shooter/EnumContainer.h"
 #include "Shooter/Enemies/BaseEnemy.h"
 #include "Shooter/EnvironmentActors/BaseCoverObject.h"
+#include "InputCoreTypes.h"
 
 static float CurrentSpringArmLength;
 static float CurrentShootImpulse;
@@ -50,6 +52,12 @@ ATPS_PlayerCharacter::ATPS_PlayerCharacter()
 	CameraComponent->SetupAttachment(SpringArmComp, "head");
 	GetMesh()->bReceivesDecals = false;
 	bUseControllerRotationYaw  = false;
+
+	WidgetInteraction = CreateDefaultSubobject<UWidgetInteractionComponent>("Widget Interaction Component");
+	WidgetInteraction->SetupAttachment(CameraComponent);
+	WidgetInteraction->bShowDebug = true;
+	WidgetInteraction->bEnableHitTesting = true;
+	
 
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>("Health Component");
 	HealthComponent->OnDeath.AddDynamic(this, &ATPS_PlayerCharacter::OnActorDestroyed);
@@ -145,7 +153,7 @@ void ATPS_PlayerCharacter::MovementEnd()
 	
 	GetCharacterMovement()->MaxWalkSpeed = 250.0f;
 
-	if(!bIsAiming)
+	if(!bIsAiming & !bIsTakingCover)
 	{
 		if(TimeLineSpringArmMoving.IsPlaying())
 		{
@@ -266,6 +274,10 @@ void ATPS_PlayerCharacter::UnEquipWeapon()
 //---------------------------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerCharacter::ShootStart()
 {
+	if(bUnarmed)
+	{
+		WidgetInteraction->PressPointerKey(EKeys::LeftMouseButton);
+	}
 	if(bUnarmed || !bIsAiming || !bCanShoot) return;
 	
 	CurrentWeapon->FireWeapon(CameraComponent->GetComponentLocation(), CameraComponent->GetComponentRotation().Vector());
@@ -274,6 +286,7 @@ void ATPS_PlayerCharacter::ShootStart()
 //---------------------------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerCharacter::ShootEnd()
 {
+	WidgetInteraction->ReleasePointerKey(EKeys::LeftMouseButton);
 	Pistol->FireEnd();
 }
 
@@ -536,7 +549,7 @@ void ATPS_PlayerCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	CheckForwardTrace();
-	
+
 	TimeLinesTick(DeltaTime);
 
 	HeadBob();

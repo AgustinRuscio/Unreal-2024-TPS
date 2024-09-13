@@ -8,6 +8,7 @@
 #include "VectorTypes.h"
 #include "Components/ArrowComponent.h"
 #include "Components/BoxComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Shooter/Player/TPS_PlayerCharacter.h"
 
 class ATPS_PlayerCharacter;
@@ -94,7 +95,9 @@ void ABaseCoverObject::BeginPlay()
 	Super::BeginPlay();
 
 	Cover_One_BoxComponent->OnComponentBeginOverlap.AddDynamic(this, &ABaseCoverObject::OnPlayerBeginOverlapEnterArea);
-	Cover_One_BoxComponent->OnComponentEndOverlap.AddDynamic(this, &ABaseCoverObject::OnPlayerEndOverlapEnterArea);
+	Cover_Two_BoxComponent->OnComponentBeginOverlap.AddDynamic(this, &ABaseCoverObject::OnPlayerBeginOverlapEnterArea);
+	Cover_Three_BoxComponent->OnComponentBeginOverlap.AddDynamic(this, &ABaseCoverObject::OnPlayerBeginOverlapEnterArea);
+	Cover_Four_BoxComponent->OnComponentBeginOverlap.AddDynamic(this, &ABaseCoverObject::OnPlayerBeginOverlapEnterArea);
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -127,7 +130,7 @@ void ABaseCoverObject::OnPlayerBeginOverlapEnterArea(UPrimitiveComponent* Overla
 	
 	if(ATPS_PlayerCharacter* PlayerInside = Cast<ATPS_PlayerCharacter>(OtherActor))
 	{
-		//PlayerInside->SetCoverObject(this);
+		PlayerInside->GetCharacterMovement()->StopMovementImmediately();
 		UE_LOG(LogTemp, Warning, TEXT("UEpa"));
 	}
 }

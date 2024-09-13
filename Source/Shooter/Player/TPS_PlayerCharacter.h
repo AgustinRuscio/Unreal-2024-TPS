@@ -46,7 +46,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = Components)
 	UHealthComponent* HealthComponent;
-	
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	class UWidgetInteractionComponent* WidgetInteraction;
 	//*****************************************************************************//
 	//								PUBLIC VARIABLES							   // 
 	//*****************************************************************************//

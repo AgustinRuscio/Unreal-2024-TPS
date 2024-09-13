@@ -6,49 +6,54 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AIController.h"
-#include "EnemyAIController.generated.h"
-
+#include "GameFramework/Actor.h"
+#include "EnemyManager.generated.h"
 
 UCLASS()
-class SHOOTER_API AEnemyAIController : public AAIController
+class SHOOTER_API AEnemyManager : public AActor
 {
 	GENERATED_BODY()
+	
 
 public:
+	
 	//*****************************************************************************//
 	//						CONSTRUCTOR & PUBLIC COMPONENTS						   //
 	//*****************************************************************************//
 
 	//Constructor
-	AEnemyAIController();
-
-	UPROPERTY(EditDefaultsOnly, Category = Components, meta=(AllowPrivateAccess = "true"))
-	UAIPerceptionComponent* IaPerceptionComponent;
+	AEnemyManager();
 	
 	//*****************************************************************************//
-	//								PUBLIC VARIABLES							   // 
+	//								PUBLIC VARIABLES							   //
 	//*****************************************************************************//
 	
 	//*****************************************************************************//
 	//								PUBLIC METHODS								   //
 	//*****************************************************************************//
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void WarnReceive(class ATPS_PlayerCharacter* PlayerRef);
+	
 	
 private:
 
 	//*****************************************************************************//
-	//								PRIVATE VARIABLES							   //
-	//*****************************************************************************//
-	
-	UPROPERTY(EditDefaultsOnly, Category = AI)
-	UBehaviorTree* BehaviourTree;
-	
-	//*****************************************************************************//
-	//								PRIVATE METHODS								   //
+	//								PRIVATE VARIABLES							...//
 	//*****************************************************************************//
 
+	UPROPERTY(EditDefaultsOnly, Category = Settings)
+	float DetectingDistance;
+	
+	TArray<AActor*> AllEnemies;
+	TArray<class ABaseEnemy*> AllEnemiesCasted;
+	
+	//*****************************************************************************//
+	//								PRIVATE METHODS								...//
+	//*****************************************************************************//
 	virtual void BeginPlay() override;
+
+	void GetAllEnemiesInScene();
+
+	void BindEnemiesBehaviours();
+	
+	UFUNCTION()
+	void WarnNearEnemies(class ABaseEnemy* Caller, class ATPS_PlayerCharacter* PlayerLocation);
 };

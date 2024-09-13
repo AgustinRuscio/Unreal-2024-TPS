@@ -11,6 +11,8 @@
 #include "Shooter/Interface/IDamageable.h"
 #include "BaseEnemy.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FPlayerDetected, ABaseEnemy*, DetectorEnemy, class ATPS_PlayerCharacter*, PlayerRef);
+
 UCLASS()
 class SHOOTER_API ABaseEnemy : public ACharacter, public IIDamageable
 {
@@ -19,7 +21,7 @@ class SHOOTER_API ABaseEnemy : public ACharacter, public IIDamageable
 public:
 
 	//*****************************************************************************//
-	//						CONSTRUCTOR & PUBLIC COMPONENTS						   // 
+	//						CONSTRUCTOR & PUBLIC COMPONENTS						   //
 	//*****************************************************************************//
 
 	//Constructor
@@ -32,27 +34,17 @@ public:
 	class UArrowComponent* SpawnFloorBloodArrow;
 	
 	//*****************************************************************************//
-	//								PUBLIC VARIABLES							   // 
-	//*****************************************************************************//
-	
-	//*****************************************************************************//
-	//								PUBLIC METHODS								   // 
+	//								PUBLIC VARIABLES							   //
 	//*****************************************************************************//
 
-	UFUNCTION(BlueprintCallable)
-	FORCEINLINE bool GetIsDeath() const { return bIsDeath; };
+	FPlayerDetected OnPlayerDetected;
 	
-	UFUNCTION(BlueprintCallable)
-	FORCEINLINE bool GetWillPatrol() const { return bWillPatrol; };
-
+	//*****************************************************************************//
+	//								PUBLIC METHODS								   //
+	//*****************************************************************************//
+	
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE bool GetIsAwareOfPlayerPresence() const { return bIsAwareOfPlayer; };
-	
-	UFUNCTION(BlueprintCallable)
-	FORCEINLINE float GetShootDistance() const { return ShootDistance; };
-	
-	UFUNCTION(BlueprintCallable)
-	class ATargetPoint* GetCurrentPatrolPoint() const;
 	
 	virtual FName GetHeadBone() const override;
 	
@@ -63,13 +55,12 @@ public:
 
 	void InstaKill();
 	
-	UFUNCTION(BlueprintCallable)
-	void PlayerOnSight(bool bAwareOfPlayer);
+	void WarningReceived(class ATPS_PlayerCharacter* PlayerRef);
 	
 protected:
 	
 	//*****************************************************************************//
-	//								PROTECTED VARIABLES							   // 
+	//								PROTECTED VARIABLES							   //
 	//*****************************************************************************//
 
 	UPROPERTY(EditDefaultsOnly, Category = Settings)
@@ -98,24 +89,57 @@ protected:
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite, Category = VFX)
 	UAnimMontage* SkeletonShootAnim;
 	
-	//*****************************************************************************//
-	//								PROTECTED METHODS							   // 
-	//*****************************************************************************//
+	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite, Category = VFX)
+	UAnimMontage* SkeletonMeleeAnim;
 
+	class AEnemyAIController* AIController;
+	
+	//*****************************************************************************//
+	//								PROTECTED METHODS							   //
+	//*****************************************************************************//
+	
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE bool GetIsDeath() const { return bIsDeath; };
+	
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE bool GetWillPatrol() const { return bWillPatrol; };
+	
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE float GetShootDistance() const { return ShootDistance; };
+	
+	UFUNCTION(BlueprintCallable)
+	class ATargetPoint* GetCurrentPatrolPoint() const;
+	
 	virtual void BeginPlay() override;
-
+	virtual void Tick(float DeltaSeconds) override;
+	
 	UFUNCTION(BlueprintCallable)
 	void ShootStart();
 
 	UFUNCTION(BlueprintCallable)
+	void MeleeAttack();
+	
+	UFUNCTION(BlueprintCallable)
+	void MeleeAttackStart();
+	
+	UFUNCTION(BlueprintCallable)
+	void MeleeAttackEnd();
+	
+	UFUNCTION(BlueprintCallable)
 	void ChangeToNextWaypoint();
+	
+	UFUNCTION(BlueprintCallable)
+	void PlayerOnSight(bool bAwareOfPlayer);
+	
+	UFUNCTION(BlueprintCallable)
+	void WarnOtherEnemies(class ATPS_PlayerCharacter* PlayerRef);
 	
 private:
 	
 	//*****************************************************************************//
-	//								PRIVATE VARIABLES							   // 
+	//								PRIVATE VARIABLES							   //
 	//*****************************************************************************//
-
+	bool bIsAttacking;
 	bool bIsDeath;
 	
 	UPROPERTY(EditAnywhere, Category = Settings)
@@ -129,6 +153,17 @@ private:
 	UPROPERTY(EditAnywhere, Category = Settings)
 	float ShootDamage;
 
+	UPROPERTY(EditAnywhere, Category = Settings)
+	float MeleeAttackDistance;
+	
+	UPROPERTY(EditAnywhere, Category = Settings)
+	float MeleeAttackDamage;
+	
+	float MeleeTimer;
+	
+	UPROPERTY(EditAnywhere, Category = Settings)
+	float MeleeCoolDown;
+	
 	UPROPERTY(EditAnywhere, Category = Patrol)
 	TArray<class ATargetPoint*> PatrolPoints;
 	
@@ -147,7 +182,7 @@ private:
 	TArray<TSubclassOf<class APickupWeapon>> PossibleDrops;
 	
 	//*****************************************************************************//
-	//								PRIVATE METHODS								...// 
+	//								PRIVATE METHODS								...//
 	//*****************************************************************************//
 
 	void DropItem();

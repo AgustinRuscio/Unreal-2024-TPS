@@ -58,6 +58,8 @@ void ABaseEnemy::OnActorDestroyed()
 	
 	HealthComponent->DestroyComponent();
 
+	OnEnemyKilled.Broadcast(this);
+	
 	DropItem();
 	
 	DeathVFX();

@@ -9,6 +9,8 @@
 #include "GameFramework/Actor.h"
 #include "EnemyManager.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FAllEnemyEliminated);
+
 UCLASS()
 class SHOOTER_API AEnemyManager : public AActor
 {
@@ -23,37 +25,4 @@ public:
 
 	//Constructor
 	AEnemyManager();
-	
-	//*****************************************************************************//
-	//								PUBLIC VARIABLES							   //
-	//*****************************************************************************//
-	
-	//*****************************************************************************//
-	//								PUBLIC METHODS								   //
-	//*****************************************************************************//
-	
-	
-private:
-
-	//*****************************************************************************//
-	//								PRIVATE VARIABLES							...//
-	//*****************************************************************************//
-
-	UPROPERTY(EditDefaultsOnly, Category = Settings)
-	float DetectingDistance;
-	
-	TArray<AActor*> AllEnemies;
-	TArray<class ABaseEnemy*> AllEnemiesCasted;
-	
-	//*****************************************************************************//
-	//								PRIVATE METHODS								...//
-	//*****************************************************************************//
-	virtual void BeginPlay() override;
-
-	void GetAllEnemiesInScene();
-
-	void BindEnemiesBehaviours();
-	
-	UFUNCTION()
-	void WarnNearEnemies(class ABaseEnemy* Caller, class ATPS_PlayerCharacter* PlayerLocation);
 };

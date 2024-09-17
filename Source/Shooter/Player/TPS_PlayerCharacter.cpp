@@ -698,13 +698,7 @@ void ATPS_PlayerCharacter::UpdateLifeBar()
 //---------------------------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerCharacter::ShowDeathWidget()
 {
-	DeathTimerDelegate.BindLambda([&]
-	{
-		controller->OnPlayerDeath();
-	});
-
-	if(!GetWorld()->GetTimerManager().IsTimerActive(DeathTimerHandle))
-		GetWorld()->GetTimerManager().SetTimer(DeathTimerHandle, DeathTimerDelegate, 3.f, false);
+	controller->OnPlayerDeath();
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------

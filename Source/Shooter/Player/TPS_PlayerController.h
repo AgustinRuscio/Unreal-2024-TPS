@@ -35,6 +35,9 @@ public:
 	//*****************************************************************************//
 	void OnPlayerDeath();
 
+	void OnLevelWin();
+	void OnLevelLose();
+
 	void UpdateHealthBar(float BarValue);
 
 	void ShowHideStealthKill(bool Activate);
@@ -58,6 +61,7 @@ private:
 	//*****************************************************************************//
 
 	class ATPS_PlayerCharacter* PlayerCharacterRef;
+	class AShooterBaseHUD* HUD;
 
 #pragma region Inputs
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -102,26 +106,12 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	const class UInputAction* InputActionTTakeCover;
 #pragma endregion
-
-	UPROPERTY(EditDefaultsOnly, Category = VFX)
-	TSubclassOf<UUserWidget> DeathWidget;
-	
-	UPROPERTY(EditDefaultsOnly, Category = VFX)
-	TSubclassOf<class UPlayerHUD> PlayerHUDWidget;
-
-	class UUserWidget* DeathHUD;
-	class UPlayerHUD* PlayerHUD;
-	
-	FTimerHandle DeathTimerHandle;
-	FTimerDelegate DeathTimerDelegate;
 	
 	//*****************************************************************************//
 	//								PRIVATE METHODS								...// 
 	//*****************************************************************************//
 
 	virtual void BeginPlay() override;
-
-	void CreatePlayerWidgets();
 	
 	void UnbindInputs();
 	void BindRegularInputs();
@@ -152,4 +142,5 @@ private:
 	void ThirdWeapon(const FInputActionValue& value);
 	
 	void TakeCover(const FInputActionValue& value);
+ 
 };

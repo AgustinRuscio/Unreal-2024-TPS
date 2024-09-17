@@ -10,6 +10,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "TPS_PlayerCharacter.h"
 #include "Blueprint/UserWidget.h"
+#include "Shooter/ShooterBaseHUD.h"
+#include "Shooter/ShooterGameModeBase.h"
 #include "Shooter/Widgets/PlayerHUD.h"
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -18,27 +20,41 @@ ATPS_PlayerController::ATPS_PlayerController() { }
 //---------------------------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerController::OnPlayerDeath()
 {
-	if(!GetWorld()->GetTimerManager().IsTimerActive(DeathTimerHandle))
-		GetWorld()->GetTimerManager().SetTimer(DeathTimerHandle, DeathTimerDelegate, 3.f, false);
+	if(GetWorld())
+	{
+		AShooterGameModeBase* thisGameMode = Cast<AShooterGameModeBase>(GetWorld()->GetAuthGameMode());
+		thisGameMode->LevelFinished(false);
+	}
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerController::OnLevelWin()
+{
 	Pause();
 	bShowMouseCursor = true;
 	
-	DeathHUD = CreateWidget(GetWorld(), DeathWidget, "Death Widget");
-	DeathHUD->AddToViewport(0);
-	DeathHUD->SetIsFocusable(true);
-	DeathHUD->SetFocus();
+	HUD->DisplayWinningWidget();
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+void ATPS_PlayerController::OnLevelLose()
+{
+	Pause();
+	bShowMouseCursor = true;
+	
+	HUD->DisplayLostWidget();
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerController::UpdateHealthBar(float BarValue)
 {
-	PlayerHUD->OnLifeBarUpdate(BarValue);
+	HUD->UpdateLifeBar(BarValue);
 }
 
 //----------------------------------------------------------------------------------------------------------------------
 void ATPS_PlayerController::ShowHideStealthKill(bool Activate)
 {
-	PlayerHUD->StealthKillWidget(Activate);
+	HUD->StealthKill(Activate);
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -54,16 +70,9 @@ void ATPS_PlayerController::BeginPlay()
 	Super::BeginPlay();
 
 	PlayerCharacterRef = Cast<ATPS_PlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-
+	HUD = Cast<AShooterBaseHUD>(GetHUD());
+	
 	BindRegularInputs();
-
-	CreatePlayerWidgets();
-}
-
-void ATPS_PlayerController::CreatePlayerWidgets()
-{
-	PlayerHUD = CreateWidget<UPlayerHUD>(GetWorld(), PlayerHUDWidget);
-	PlayerHUD->AddToViewport(1);
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------

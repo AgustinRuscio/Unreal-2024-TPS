@@ -12,6 +12,7 @@
 #include "BaseEnemy.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FPlayerDetected, ABaseEnemy*, DetectorEnemy, class ATPS_PlayerCharacter*, PlayerRef);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEnemyEliminated,  ABaseEnemy*, DeathEnemy);
 
 UCLASS()
 class SHOOTER_API ABaseEnemy : public ACharacter, public IIDamageable
@@ -38,6 +39,7 @@ public:
 	//*****************************************************************************//
 
 	FPlayerDetected OnPlayerDetected;
+	FEnemyEliminated OnEnemyKilled;
 	
 	//*****************************************************************************//
 	//								PUBLIC METHODS								   //

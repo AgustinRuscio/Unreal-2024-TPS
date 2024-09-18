@@ -22,6 +22,7 @@ public:
 	//*****************************************************************************//
 	//								PUBLIC METHODS								   //
 	//*****************************************************************************//
+	void TogglePlayerHUD(bool visible);
 	void UpdateLifeBar(float Value);
 	void StealthKill(bool Value);
 	

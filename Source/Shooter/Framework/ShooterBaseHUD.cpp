@@ -9,6 +9,12 @@
 #include "Shooter/Widgets/PlayerHUD.h"
 
 //---------------------------------------------------------------------------------------------------------------------------------------
+void AShooterBaseHUD::TogglePlayerHUD(bool visible)
+{
+	visible ? PlayerHUD->SetVisibility(ESlateVisibility::Collapsed) : PlayerHUD->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+}
+
+//---------------------------------------------------------------------------------------------------------------------------------------
 void AShooterBaseHUD::UpdateLifeBar(float Value)
 {
 	PlayerHUD->OnLifeBarUpdate(Value);
@@ -26,7 +32,7 @@ void AShooterBaseHUD::DisplayWinningWidget()
 	CurrentFocusableWidget = WinningHUD;
 	FocusWidget();
 	
-	WinningHUD->SetVisibility(ESlateVisibility::HitTestInvisible);
+	WinningHUD->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -35,7 +41,7 @@ void AShooterBaseHUD::DisplayLostWidget()
 	CurrentFocusableWidget = DeathHUD;
 	FocusWidget();
 	
-	DeathHUD->SetVisibility(ESlateVisibility::HitTestInvisible);
+	DeathHUD->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 }
 
 //---------------------------------------------------------------------------------------------------------------------------------------

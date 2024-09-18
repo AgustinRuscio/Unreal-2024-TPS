@@ -29,6 +29,7 @@ void AShooterBaseHUD::StealthKill(bool Value)
 //---------------------------------------------------------------------------------------------------------------------------------------
 void AShooterBaseHUD::DisplayWinningWidget()
 {
+	TogglePlayerHUD(false);
 	CurrentFocusableWidget = WinningHUD;
 	FocusWidget();
 	
@@ -38,6 +39,7 @@ void AShooterBaseHUD::DisplayWinningWidget()
 //---------------------------------------------------------------------------------------------------------------------------------------
 void AShooterBaseHUD::DisplayLostWidget()
 {
+	TogglePlayerHUD(false);
 	CurrentFocusableWidget = DeathHUD;
 	FocusWidget();
 	

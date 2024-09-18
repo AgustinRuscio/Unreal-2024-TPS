@@ -2,9 +2,19 @@
 
 Thrid Person Shooter Developed in Unreal Engine 5 C++
 
-* StealthKill
+* Stealth Kill
 * AI
+  - Melee Attack
+  - Distance Attack
+  - Obstacle avoidance
 * Shooting system
+  - Multiple weapons
+  - Relaod
+  - Personal HUD for each weapon
+  - Pickeable weapons
+* Customizable enemies
+    - Weapon Type
+    - Drop rate
 
 ![](https://i.postimg.cc/Wpg8fZPb/Screenshot-2024-09-18-021530.png)
 

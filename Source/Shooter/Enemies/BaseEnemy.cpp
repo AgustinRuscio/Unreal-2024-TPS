@@ -134,7 +134,7 @@ void ABaseEnemy::MeleeAttack()
 //---------------------------------------------------------------------------------------------------------------------------------------
 void ABaseEnemy::MeleeAttackStart()
 {
-	FHitResult HitResults;
+	TArray<FHitResult> HitResults;
 
 	const FVector& StartBox = GetActorLocation();
 	const FVector& EndBox   = StartBox + (GetActorForwardVector() * MeleeAttackDistance);
@@ -146,17 +146,19 @@ void ABaseEnemy::MeleeAttackStart()
 	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
 	ObjectTypes.Add(static_cast<EObjectTypeQuery>(ECollisionChannel::ECC_Pawn));
 
-	UKismetSystemLibrary::BoxTraceSingleForObjects(GetWorld(), StartBox, EndBox, BoxSize,
+	UKismetSystemLibrary::BoxTraceMultiForObjects(GetWorld(), StartBox, EndBox, BoxSize,
 	GetActorRotation(), ObjectTypes, true, IgnoreTheseActors, EDrawDebugTrace::ForDuration, HitResults, true, 
 	FColor::Red, FColor::Green, 3.0f);
-
 	
-		if (ATPS_PlayerCharacter* TempEnemy = Cast<ATPS_PlayerCharacter>(HitResults.GetActor()))
+	for (auto HitResult : HitResults)
+	{
+		if (ATPS_PlayerCharacter* TempEnemy = Cast<ATPS_PlayerCharacter>(HitResult.GetActor()))
 		{
 			FName a = "NONE";
 			TempEnemy->OnHit(MeleeAttackDamage, 10000.f,a);
+			break;
 		}
-	
+	}
 }
 //---------------------------------------------------------------------------------------------------------------------------------------
 void ABaseEnemy::MeleeAttackEnd()

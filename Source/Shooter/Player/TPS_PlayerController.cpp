@@ -10,8 +10,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "TPS_PlayerCharacter.h"
 #include "Blueprint/UserWidget.h"
-#include "Shooter/ShooterBaseHUD.h"
-#include "Shooter/ShooterGameModeBase.h"
+#include "Shooter/Framework/ShooterBaseHUD.h"
+#include "Shooter/Framework/ShooterGameModeBase.h"
 #include "Shooter/Widgets/PlayerHUD.h"
 
 //---------------------------------------------------------------------------------------------------------------------------------------

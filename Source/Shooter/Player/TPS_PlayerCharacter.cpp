@@ -80,7 +80,7 @@ void ATPS_PlayerCharacter::OnHit(float DamageTaken, float ShooImpulse, FName& Bo
 	HealthComponent->TakeDamage(DamageTaken);
 	CurrentShootImpulse   = ShooImpulse;
 	CurrentHitBoneName	  = BoneHit;
-
+	
 	UpdateLifeBar();
 	HitFeedBack();
 }
